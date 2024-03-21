@@ -1,40 +1,45 @@
 package com.example.testapp
 
+// Import statements for necessary components (Add if not already present in your file)
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.dp
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.material.Text
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material.Scaffold
+import androidx.compose.material.TopAppBar
+import android.os.Bundle
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,12 +68,33 @@ class MainActivity : ComponentActivity() {
 fun StepCounterApp() {
     val navController = rememberNavController()
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Step Counter") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Step Counter") },
+                actions = {
+                    // User icon button added here
+                    IconButton(onClick = { navController.navigate("userSettings") }) {
+                        Icon(Icons.Filled.AccountCircle, contentDescription = "User Settings")
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         NavHost(navController = navController, startDestination = "main") {
             composable("main") { StepCounterUI(navController, paddingValues) }
-            composable("weeklySteps") { WeeklyStepsScreen() } // This will be your bar chart screen
+            composable("weeklySteps") { WeeklyStepsScreen() }
+            // Add the composable for user settings screen
+            composable("userSettings") { UserSettingsScreen(navController) }
         }
+    }
+}
+
+@Composable
+fun UserSettingsScreen(navController: NavController) {
+    // Placeholder for User Settings UI
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("User Settings", style = MaterialTheme.typography.h5)
+        // Implement the UI for updating user details
     }
 }
 

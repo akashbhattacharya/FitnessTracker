@@ -104,5 +104,7 @@ dependencies {
     // optional - Paging 3 Integration
     implementation("androidx.room:room-paging:$room_version")
     implementation("com.google.devtools.ksp:symbol-processing-api:1.9.21-1.0.15")
+    implementation ("androidx.compose.material:material-icons-extended:1.1.0")
+
 
 }
