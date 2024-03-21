@@ -3,25 +3,38 @@ package com.example.testapp
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,19 +59,22 @@ class MainActivity : ComponentActivity() {
 
 }
 
-
 @Composable
 fun StepCounterApp() {
-    val viewModel: StepCounterViewModel = viewModel()
+    val navController = rememberNavController()
     Scaffold(
         topBar = { TopAppBar(title = { Text("Step Counter") }) }
     ) { paddingValues ->
-        StepCounterUI(viewModel = viewModel, paddingValues = paddingValues)
+        NavHost(navController = navController, startDestination = "main") {
+            composable("main") { StepCounterUI(navController, paddingValues) }
+            composable("weeklySteps") { WeeklyStepsScreen() } // This will be your bar chart screen
+        }
     }
 }
 
 @Composable
-fun StepCounterUI(viewModel: StepCounterViewModel, paddingValues: PaddingValues) {
+fun StepCounterUI(navController: NavController, paddingValues: PaddingValues) {
+    val viewModel: StepCounterViewModel = viewModel()
     val steps = viewModel.steps.collectAsState().value
     val calories = viewModel.calories.collectAsState().value
     val goal = 100 // Your step goal
@@ -77,6 +93,14 @@ fun StepCounterUI(viewModel: StepCounterViewModel, paddingValues: PaddingValues)
         Button(onClick = { viewModel.resetSteps() }) {
             Text("Reset Steps")
         }
+        Button(
+            onClick = { navController.navigate("weeklySteps") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Text("View Weekly Steps")
+        }
     }
 }
 
@@ -87,4 +111,39 @@ fun CircularProgressBar(stepsCount: Int, goalCount: Int, modifier: Modifier = Mo
     Spacer(modifier = Modifier.height(8.dp)) // Spacing between progress bar and text
     Text(text = "${(progress * 100).toInt()}% of goal")
 }
+
+// Placeholder for the bar chart screen
+@Composable
+fun WeeklyStepsScreen() {
+    val data = listOf(100, 200, 300, 400, 500) // Sample data for the bars
+    val maxBarHeight = 200.dp // Max height for the bars
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(maxBarHeight)
+        ) {
+            val barWidth = size.width / data.size
+            val maxDataValue = data.maxOrNull() ?: 0
+            val scaleY = maxBarHeight.toPx() / maxDataValue
+
+            data.forEachIndexed { index, value ->
+                val barHeight = value * scaleY
+                drawRect(
+                    color = Color.Blue,
+                    topLeft = Offset(index * barWidth, size.height - barHeight),
+                    size = androidx.compose.ui.geometry.Size(barWidth, barHeight),
+                    style = Stroke(width = 1.dp.toPx())
+                )
+            }
+        }
+    }
+}
+
 

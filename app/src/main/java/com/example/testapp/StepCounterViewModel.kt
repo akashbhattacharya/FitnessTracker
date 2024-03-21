@@ -1,19 +1,20 @@
 package com.example.testapp
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
@@ -25,6 +26,10 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private var stepThreshold = 12.0 // Example threshold, may need adjustment
     private var lastStepTime = System.currentTimeMillis()
 
+    private val TIME_THRESHOLD_IN_MILLIS = 2 * 60 * 1000 // Change to 2 minutes
+    private val INACTIVITY_CHECK_INTERVAL = 10 * 60 * 1000 // Check for inactivity every 10 minutes
+    private val INACTIVITY_NOTIFICATION_ID = 12345 // Unique notification ID
+
     val steps = MutableStateFlow(0)
     val calories = MutableStateFlow(0.0)
 
@@ -32,6 +37,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         val sensorToRegister = stepSensor ?: accelerometerSensor
         sensorManager.registerListener(this, sensorToRegister, SensorManager.SENSOR_DELAY_UI)
         createNotificationChannel()
+
+        // Start checking for inactivity periodically
+        startInactivityCheck()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -55,11 +63,38 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
+    private fun startInactivityCheck() {
+        viewModelScope.launch {
+            while (true) {
+                delay(INACTIVITY_CHECK_INTERVAL.toLong()) // Delay for a specific interval
+                checkInactivity()
+            }
+        }
+    }
+
+    private fun checkInactivity() {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastStepTime > TIME_THRESHOLD_IN_MILLIS) {
+            sendInactivityNotification()
+        }
+    }
+
+    private fun sendInactivityNotification() {
+        val notificationBuilder = NotificationCompat.Builder(getApplication(), "stepCounterChannel")
+            .setSmallIcon(android.R.drawable.stat_notify_chat)
+            .setContentTitle("Get Moving!")
+            .setContentText("It seems like you haven't walked for a while. Take a break and walk around!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        val notificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(INACTIVITY_NOTIFICATION_ID, notificationBuilder.build())
+    }
+
     private fun detectStep(accelerationMagnitude: Float) {
         val currentTime = System.currentTimeMillis()
         if (accelerationMagnitude > stepThreshold && currentTime - lastStepTime > 500) { // Debounce time of 500ms
             viewModelScope.launch {
-                steps.value = steps.value + 1
+                steps.value += 1
                 calories.value = calculateCalories(steps.value)
                 sendStepMilestoneNotification(steps.value)
             }
@@ -81,7 +116,6 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Step Counter Channel"
@@ -94,7 +128,6 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
             notificationManager.createNotificationChannel(channel)
         }
     }
-
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
