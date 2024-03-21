@@ -1,52 +1,40 @@
 package com.example.testapp
 
-// Import statements for necessary components (Add if not already present in your file)
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.material.Text
-import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.Scaffold
-import androidx.compose.material.TopAppBar
-import android.os.Bundle
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.*
+import com.example.testapp.ui.theme.TestAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createNotificationChannel()
         setContent {
-            StepCounterApp()
+            TestAppTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(color = MaterialTheme.colors.background) {
+                    StepCounterApp()
+                }
+            }
         }
     }
 
@@ -85,18 +73,69 @@ fun StepCounterApp() {
             composable("weeklySteps") { WeeklyStepsScreen() }
             // Add the composable for user settings screen
             composable("userSettings") { UserSettingsScreen(navController) }
+            composable("healthDetails") { HealthDetailsScreen(navController) }
+            composable("changeMoveGoal") { ChangeMoveGoalScreen(navController) }
+            composable("unitsOfMeasure") { UnitsOfMeasureScreen(navController) }
+            composable("notifications") { NotificationsScreen(navController) }
         }
     }
 }
 
+
 @Composable
 fun UserSettingsScreen(navController: NavController) {
-    // Placeholder for User Settings UI
     Column(modifier = Modifier.padding(16.dp)) {
         Text("User Settings", style = MaterialTheme.typography.h5)
-        // Implement the UI for updating user details
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = { navController.navigate("healthDetails") }) {
+            Text("Health Details")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = { navController.navigate("changeMoveGoal") }) {
+            Text("Change Move Goal")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = { navController.navigate("unitsOfMeasure") }) {
+            Text("Units of Measure")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = { navController.navigate("notifications") }) {
+            Text("Notifications")
+        }
     }
 }
+
+
+
+
+@Composable
+fun HealthDetailsScreen(navController: NavController) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Health Details", style = MaterialTheme.typography.h5)
+        // Implement UI for health details here
+    }
+}
+
+@Composable
+fun UnitsOfMeasureScreen(navController: NavController) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Units of Measure", style = MaterialTheme.typography.h5)
+        // Implement UI for units of measure here
+    }
+}
+
+@Composable
+fun NotificationsScreen(navController: NavController) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Notifications", style = MaterialTheme.typography.h5)
+        // Implement UI for notifications settings here
+    }
+}
+
 
 @Composable
 fun StepCounterUI(navController: NavController, paddingValues: PaddingValues) {
@@ -172,4 +211,49 @@ fun WeeklyStepsScreen() {
     }
 }
 
+@Composable
+fun ChangeMoveGoalScreen(navController: NavController) {
+    val viewModel: StepCounterViewModel = viewModel()
+    val currentGoal = remember { mutableStateOf(viewModel.moveGoal.value) }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Change Move Goal", style = MaterialTheme.typography.h5)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display the current move goal
+        Text("Move Goal: ${currentGoal.value}")
+
+        // Plus and minus buttons to adjust the move goal
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Button(onClick = { increaseGoal(currentGoal) }) {
+                Text("+10")
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(onClick = { decreaseGoal(currentGoal) }) {
+                Text("-10")
+            }
+        }
+
+        // Save button to apply the changes
+        Button(
+            onClick = {
+                viewModel.setMoveGoal(currentGoal.value) // Set the new move goal in the ViewModel
+                navController.popBackStack() // Navigate back
+            },
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(top = 16.dp)
+        ) {
+            Text("Save")
+        }
+    }
+}
+
+private fun increaseGoal(currentGoal: MutableState<Int>) {
+    currentGoal.value += 10
+}
+
+private fun decreaseGoal(currentGoal: MutableState<Int>) {
+    currentGoal.value -= 10
+}
 

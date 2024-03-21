@@ -105,6 +105,16 @@ dependencies {
     implementation("androidx.room:room-paging:$room_version")
     implementation("com.google.devtools.ksp:symbol-processing-api:1.9.21-1.0.15")
     implementation ("androidx.compose.material:material-icons-extended:1.1.0")
+    implementation ("androidx.core:core-ktx:1.6.0")
+    implementation ("androidx.compose.ui:ui:1.0.1")
+    implementation ("androidx.compose.material:material:1.0.1")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.0.1")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
+    implementation ("androidx.activity:activity-compose:1.3.1")
+    implementation ("com.google.android.material:material:1.4.0")
+    implementation ("androidx.compose.material3:material3:1.0.0-alpha03")
+    implementation ("androidx.activity:activity-compose:1.4.0")
+
 
 
 }

@@ -32,6 +32,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     val steps = MutableStateFlow(0)
     val calories = MutableStateFlow(0.0)
+    val moveGoal = MutableStateFlow(1000)
 
     init {
         val sensorToRegister = stepSensor ?: accelerometerSensor
@@ -136,6 +137,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         calories.value = 0.0
     }
 
+    fun setMoveGoal(goal: Int) {
+        moveGoal.value = goal
+    }
     private fun calculateCalories(steps: Int): Double {
         return steps * 0.04 // Simplified calorie calculation. Adjust based on actual use case.
     }
