@@ -7,10 +7,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,11 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.example.testapp.ui.theme.TestAppTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,12 +38,12 @@ class MainActivity : ComponentActivity() {
             TestAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    StepCounterApp()
+                    val viewModel: StepCounterViewModel = viewModel()
+                    StepCounterApp(viewModel)
                 }
             }
         }
     }
-
     private fun createNotificationChannel() {
         val name = "Step Counter Notifications"
         val descriptionText = "Notifications for step milestones"
@@ -53,7 +59,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun StepCounterApp() {
+fun StepCounterApp(viewModel: StepCounterViewModel) {
     val navController = rememberNavController()
     Scaffold(
         topBar = {
@@ -69,17 +75,100 @@ fun StepCounterApp() {
         }
     ) { paddingValues ->
         NavHost(navController = navController, startDestination = "main") {
-            composable("main") { StepCounterUI(navController, paddingValues) }
+            composable("main") { StepCounterUI(navController, paddingValues, viewModel) }
             composable("weeklySteps") { WeeklyStepsScreen() }
             // Add the composable for user settings screen
             composable("userSettings") { UserSettingsScreen(navController) }
-            composable("healthDetails") { HealthDetailsScreen(navController) }
-            composable("changeMoveGoal") { ChangeMoveGoalScreen(navController) }
+            composable("healthDetails") { HealthDetailsScreen(navController, viewModel) }
+            composable("changeMoveGoal") { ChangeMoveGoalScreen(navController, viewModel) } // Pass viewModel here
             composable("unitsOfMeasure") { UnitsOfMeasureScreen(navController) }
             composable("notifications") { NotificationsScreen(navController) }
         }
     }
 }
+
+@Composable
+fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel) {
+    var selectedAge by remember { mutableStateOf<String?>(null) }
+    var isAgeDropdownExpanded by remember { mutableStateOf(false) } // Age dropdown expanded state
+    var height by remember { mutableStateOf("") }
+    var weight by remember { mutableStateOf("") }
+    var selectedSex by remember { mutableStateOf<String?>(null) }
+    var isSexDropdownExpanded by remember { mutableStateOf(false) } // Sex dropdown expanded state
+
+    val ageOptions = (1..100).map { it.toString() } // Example age options from 18 to 100
+    val sexOptions = listOf("Male", "Female")
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Health Details", style = MaterialTheme.typography.h5)
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Age selection
+        Box(
+            modifier = Modifier.fillMaxWidth().clickable { isAgeDropdownExpanded = true }
+        ) {
+            Text(
+                text = selectedAge ?: "Select Age",
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+            )
+            DropdownMenu(
+                expanded = isAgeDropdownExpanded,
+                onDismissRequest = { isAgeDropdownExpanded = false }
+            ) {
+                ageOptions.forEach { age ->
+                    DropdownMenuItem(onClick = {
+                        selectedAge = age
+                        isAgeDropdownExpanded = false
+                    }) {
+                        Text(age)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Sex selection
+        Box(
+            modifier = Modifier.fillMaxWidth().clickable { isSexDropdownExpanded = true }
+        ) {
+            Text(
+                text = selectedSex ?: "Select Sex",
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+            )
+            DropdownMenu(
+                expanded = isSexDropdownExpanded,
+                onDismissRequest = { isSexDropdownExpanded = false }
+            ) {
+                sexOptions.forEach { sex ->
+                    DropdownMenuItem(onClick = {
+                        selectedSex = sex
+                        isSexDropdownExpanded = false
+                    }) {
+                        Text(sex)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Save button
+        Button(onClick = {
+            // Save health details
+            viewModel.setHealthDetails(selectedAge ?: "", height, weight, selectedSex ?: "")
+            navController.navigateUp()
+        }) {
+            Text("Save")
+        }
+    }
+}
+
+
+
+
+
+
 
 
 @Composable
@@ -112,13 +201,9 @@ fun UserSettingsScreen(navController: NavController) {
 
 
 
-@Composable
-fun HealthDetailsScreen(navController: NavController) {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Health Details", style = MaterialTheme.typography.h5)
-        // Implement UI for health details here
-    }
-}
+
+
+
 
 @Composable
 fun UnitsOfMeasureScreen(navController: NavController) {
@@ -138,11 +223,13 @@ fun NotificationsScreen(navController: NavController) {
 
 
 @Composable
-fun StepCounterUI(navController: NavController, paddingValues: PaddingValues) {
-    val viewModel: StepCounterViewModel = viewModel()
+fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, viewModel: StepCounterViewModel) {
     val steps = viewModel.steps.collectAsState().value
     val calories = viewModel.calories.collectAsState().value
-    val goal = 100 // Your step goal
+    val goal = viewModel.moveGoal.collectAsState().value
+
+    val progress = (steps.toFloat() / goal).coerceIn(0f, 1f)
+    val goalText = "$steps / $goal"
 
     Column(
         modifier = Modifier
@@ -154,7 +241,8 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues) {
         CircularProgressBar(stepsCount = steps, goalCount = goal, modifier = Modifier.size(275.dp))
         Spacer(modifier = Modifier.height(16.dp)) // Create space between progress bar and text
         Text(text = "Steps: $steps")
-        Text(text = "Calories: ${calories.toInt()} kcal")
+        Text(text = "Calories: ${calories.toInt()} / $goal kcal")
+       // Text(text = "Goal: $goalText")
         Button(onClick = { viewModel.resetSteps() }) {
             Text("Reset Steps")
         }
@@ -166,8 +254,15 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues) {
         ) {
             Text("View Weekly Steps")
         }
+
+        // Show congratulations message if goal reached
+        if (progress >= 1.0f) {
+            Text("Congratulations! Goal Achieved!", color = Color.Green)
+        }
     }
 }
+
+
 
 @Composable
 fun CircularProgressBar(stepsCount: Int, goalCount: Int, modifier: Modifier = Modifier) {
@@ -177,6 +272,13 @@ fun CircularProgressBar(stepsCount: Int, goalCount: Int, modifier: Modifier = Mo
     Text(text = "${(progress * 100).toInt()}% of goal")
 }
 
+@Preview(showBackground = true)
+@Composable
+fun DefaultPreview() {
+    TestAppTheme {
+        HealthDetailsScreen(navController = rememberNavController(), viewModel = viewModel())
+    }
+}
 // Placeholder for the bar chart screen
 @Composable
 fun WeeklyStepsScreen() {
@@ -212,24 +314,23 @@ fun WeeklyStepsScreen() {
 }
 
 @Composable
-fun ChangeMoveGoalScreen(navController: NavController) {
-    val viewModel: StepCounterViewModel = viewModel()
-    val currentGoal = remember { mutableStateOf(viewModel.moveGoal.value) }
+fun ChangeMoveGoalScreen(navController: NavController, viewModel: StepCounterViewModel) {
+    val currentGoal by viewModel.moveGoal.collectAsState()
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Change Move Goal", style = MaterialTheme.typography.h5)
         Spacer(modifier = Modifier.height(16.dp))
 
         // Display the current move goal
-        Text("Move Goal: ${currentGoal.value}")
+        Text("Move Goal: $currentGoal")
 
         // Plus and minus buttons to adjust the move goal
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = { increaseGoal(currentGoal) }) {
+            Button(onClick = { viewModel.increaseMoveGoal() }) {
                 Text("+10")
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = { decreaseGoal(currentGoal) }) {
+            Button(onClick = { viewModel.decreaseMoveGoal() }) {
                 Text("-10")
             }
         }
@@ -237,8 +338,8 @@ fun ChangeMoveGoalScreen(navController: NavController) {
         // Save button to apply the changes
         Button(
             onClick = {
-                viewModel.setMoveGoal(currentGoal.value) // Set the new move goal in the ViewModel
-                navController.popBackStack() // Navigate back
+                // Directly navigate back since the viewModel is already updated
+                navController.popBackStack()
             },
             modifier = Modifier
                 .align(Alignment.End)
@@ -249,11 +350,6 @@ fun ChangeMoveGoalScreen(navController: NavController) {
     }
 }
 
-private fun increaseGoal(currentGoal: MutableState<Int>) {
-    currentGoal.value += 10
-}
 
-private fun decreaseGoal(currentGoal: MutableState<Int>) {
-    currentGoal.value -= 10
-}
+
 

@@ -1,8 +1,4 @@
 package com.example.testapp
-
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,7 +11,13 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.testapp.ui.theme.HealthDetails
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import kotlin.math.sqrt
+
 
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
     private var sensorManager: SensorManager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -30,9 +32,18 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private val INACTIVITY_CHECK_INTERVAL = 10 * 60 * 1000 // Check for inactivity every 10 minutes
     private val INACTIVITY_NOTIFICATION_ID = 12345 // Unique notification ID
 
-    val steps = MutableStateFlow(0)
-    val calories = MutableStateFlow(0.0)
-    val moveGoal = MutableStateFlow(1000)
+    private val _steps = MutableStateFlow(0)
+    val steps: StateFlow<Int> = _steps
+
+    private val _calories = MutableStateFlow(0.0)
+    val calories: StateFlow<Double> = _calories
+
+    private val _moveGoal = MutableStateFlow(1000)
+    val moveGoal: StateFlow<Int> = _moveGoal
+
+
+    private var healthDetails: HealthDetails? = null
+
 
     init {
         val sensorToRegister = stepSensor ?: accelerometerSensor
@@ -48,8 +59,8 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
             Sensor.TYPE_STEP_COUNTER -> {
                 val stepCount = event.values[0].toInt()
                 viewModelScope.launch {
-                    steps.value = stepCount
-                    calories.value = calculateCalories(stepCount)
+                    _steps.value = stepCount
+                    _calories.value = calculateCalories(stepCount)
                     sendStepMilestoneNotification(stepCount)
                 }
             }
@@ -95,9 +106,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         val currentTime = System.currentTimeMillis()
         if (accelerationMagnitude > stepThreshold && currentTime - lastStepTime > 500) { // Debounce time of 500ms
             viewModelScope.launch {
-                steps.value += 1
-                calories.value = calculateCalories(steps.value)
-                sendStepMilestoneNotification(steps.value)
+                _steps.value += 1
+                _calories.value = calculateCalories(_steps.value)
+                sendStepMilestoneNotification(_steps.value)
             }
             lastStepTime = currentTime
         }
@@ -132,14 +143,38 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    fun resetSteps() {
-        steps.value = 0
-        calories.value = 0.0
+    fun setHealthDetails(dateOfBirth: Int, age: Int, weight: Int, height: String, sex: String) {
+        healthDetails = HealthDetails( age, weight, height, sex)
     }
 
-    fun setMoveGoal(goal: Int) {
-        moveGoal.value = goal
+    fun resetSteps() {
+        _steps.value = 0
+        _calories.value = 0.0
     }
+
+    fun increaseMoveGoal() {
+        _moveGoal.value += 10
+    }
+
+    fun decreaseMoveGoal() {
+        if (_moveGoal.value > 10) { // Prevent negative goals
+            _moveGoal.value -= 10
+        }
+    }
+
+    fun setHealthDetails(age: String, height: String, weight: String, sex: String) {
+        // Assuming you have a StepCounterViewModel class where you define this function
+        // You can perform whatever action you want with the health details here
+        // For example, you can save them to a database or update some state in the view model
+        // Replace the println statements with your actual implementation
+        println("Age: $age")
+        println("Height: $height")
+        println("Weight: $weight")
+        println("Sex: $sex")
+    }
+
+
+
     private fun calculateCalories(steps: Int): Double {
         return steps * 0.04 // Simplified calorie calculation. Adjust based on actual use case.
     }
