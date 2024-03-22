@@ -91,12 +91,16 @@ fun StepCounterApp(viewModel: StepCounterViewModel) {
 fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel) {
     var selectedAge by remember { mutableStateOf<String?>(null) }
     var isAgeDropdownExpanded by remember { mutableStateOf(false) } // Age dropdown expanded state
-    var height by remember { mutableStateOf("") }
-    var weight by remember { mutableStateOf("") }
+    var selectedHeight by remember { mutableStateOf<String?>(null) }
+    var isHeightDropdownExpanded by remember { mutableStateOf(false) } // Height dropdown expanded state
+    var selectedWeight by remember { mutableStateOf<String?>(null) }
+    var isWeightDropdownExpanded by remember { mutableStateOf(false) } // Weight dropdown expanded state
     var selectedSex by remember { mutableStateOf<String?>(null) }
     var isSexDropdownExpanded by remember { mutableStateOf(false) } // Sex dropdown expanded state
 
-    val ageOptions = (1..100).map { it.toString() } // Example age options from 18 to 100
+    val ageOptions = (18..100).map { it.toString() }
+    val heightOptions = (30..275).map { it.toString() }
+    val weightOptions = (1..454).map { it.toString() }
     val sexOptions = listOf("Male", "Female")
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -121,6 +125,56 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
                         isAgeDropdownExpanded = false
                     }) {
                         Text(age)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Height selection
+        Box(
+            modifier = Modifier.fillMaxWidth().clickable { isHeightDropdownExpanded = true }
+        ) {
+            Text(
+                text = selectedHeight ?: "Select Height (cm)",
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+            )
+            DropdownMenu(
+                expanded = isHeightDropdownExpanded,
+                onDismissRequest = { isHeightDropdownExpanded = false }
+            ) {
+                heightOptions.forEach { height ->
+                    DropdownMenuItem(onClick = {
+                        selectedHeight = height
+                        isHeightDropdownExpanded = false
+                    }) {
+                        Text(height)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Weight selection
+        Box(
+            modifier = Modifier.fillMaxWidth().clickable { isWeightDropdownExpanded = true }
+        ) {
+            Text(
+                text = selectedWeight ?: "Select Weight (kg)",
+                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+            )
+            DropdownMenu(
+                expanded = isWeightDropdownExpanded,
+                onDismissRequest = { isWeightDropdownExpanded = false }
+            ) {
+                weightOptions.forEach { weight ->
+                    DropdownMenuItem(onClick = {
+                        selectedWeight = weight
+                        isWeightDropdownExpanded = false
+                    }) {
+                        Text(weight)
                     }
                 }
             }
@@ -156,20 +210,18 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
         // Save button
         Button(onClick = {
             // Save health details
-            viewModel.setHealthDetails(selectedAge ?: "", height, weight, selectedSex ?: "")
+            viewModel.setHealthDetails(
+                selectedAge ?: "",
+                selectedHeight ?: "",
+                selectedWeight ?: "",
+                selectedSex ?: ""
+            )
             navController.navigateUp()
         }) {
             Text("Save")
         }
     }
 }
-
-
-
-
-
-
-
 
 @Composable
 fun UserSettingsScreen(navController: NavController) {
