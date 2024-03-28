@@ -281,7 +281,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
     val calories = viewModel.calories.collectAsState().value
     val goal = viewModel.moveGoal.collectAsState().value
 
-    val progress = (steps.toFloat() / goal).coerceIn(0f, 1f)
+    val progress = (calories.toFloat() / goal).coerceIn(0f, 1f)
     val goalText = "$steps / $goal"
     val distance = viewModel.calculateDistance(steps, 0.75)
 
@@ -292,7 +292,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
         verticalArrangement = Arrangement.Center, // Center vertically in the space
         horizontalAlignment = Alignment.CenterHorizontally // Center horizontally
     ) {
-        CircularProgressBar(stepsCount = steps, goalCount = goal, modifier = Modifier.size(275.dp))
+        CircularProgressBar(calories = calories.toInt(), goalCalories = goal, modifier = Modifier.size(275.dp))
         Spacer(modifier = Modifier.height(16.dp)) // Create space between progress bar and text
         Text(text = "Steps: $steps")
         Text(text = "Calories: ${calories.toInt()} / $goal kcal")
@@ -320,12 +320,13 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
 
 
 @Composable
-fun CircularProgressBar(stepsCount: Int, goalCount: Int, modifier: Modifier = Modifier) {
-    val progress = (stepsCount.toFloat() / goalCount).coerceIn(0f, 1f)
+fun CircularProgressBar(calories: Int, goalCalories: Int, modifier: Modifier = Modifier) {
+    val progress = (calories.toFloat() / goalCalories).coerceIn(0f, 1f)
     CircularProgressIndicator(progress = progress, modifier = modifier)
     Spacer(modifier = Modifier.height(8.dp)) // Spacing between progress bar and text
     Text(text = "${(progress * 100).toInt()}% of goal")
 }
+
 
 @Preview(showBackground = true)
 @Composable
