@@ -1,4 +1,5 @@
 package com.example.testapp
+
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
-
 
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
     private var sensorManager: SensorManager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -41,9 +41,13 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private val _moveGoal = MutableStateFlow(1000)
     val moveGoal: StateFlow<Int> = _moveGoal
 
-
     private var healthDetails: HealthDetails? = null
 
+    private val MALE_BMR_CONSTANT = 66.5 // Constant for male BMR calculation
+    private val FEMALE_BMR_CONSTANT = 655.1 // Constant for female BMR calculation
+    private val HEIGHT_CONSTANT = 5.003 // Constant for height calculation in BMR formula
+    private val WEIGHT_CONSTANT = 13.75 // Constant for weight calculation in BMR formula
+    private val AGE_CONSTANT = 6.755 // Constant for age calculation in BMR formula
 
     init {
         val sensorToRegister = stepSensor ?: accelerometerSensor
@@ -143,8 +147,35 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    fun setHealthDetails(dateOfBirth: Int, age: Int, weight: Int, height: String, sex: String) {
-        healthDetails = HealthDetails( age, weight, height, sex)
+    fun setHealthDetails(height: Double, weight: Double, age: Int, sex: String) {
+        healthDetails = HealthDetails(age, weight, height, sex)
+        // Rest of your implementation..
+
+
+    // Calculate BMR based on user details
+        val bmr = calculateBMR()
+        // Set default move goal based on BMR
+        setDefaultMoveGoal(bmr)
+    }
+
+    private fun calculateBMR(): Double {
+        return if (healthDetails?.sex.equals("male", ignoreCase = true)) {
+            MALE_BMR_CONSTANT + (WEIGHT_CONSTANT * healthDetails?.weight!!) + (HEIGHT_CONSTANT * healthDetails?.height!!) - (AGE_CONSTANT * healthDetails?.age!!)
+        } else {
+            FEMALE_BMR_CONSTANT + (WEIGHT_CONSTANT * healthDetails?.weight!!) + (HEIGHT_CONSTANT * healthDetails?.height!!) - (AGE_CONSTANT * healthDetails?.age!!)
+        }
+    }
+
+    private fun setDefaultMoveGoal(bmr: Double) {
+        // Default move goal can be set based on a percentage of BMR
+        // You can adjust the percentage based on your application requirements
+        val percentageOfBMR = 0.2 // For example, set move goal to 20% of BMR
+        val defaultMoveGoal = (percentageOfBMR * bmr).toInt()
+        _moveGoal.value = defaultMoveGoal
+    }
+
+    fun calculateDistance(steps: Int, strideLength: Double): Double {
+        return steps * strideLength / 1000 // Convert meters to kilometers
     }
 
     fun resetSteps() {
@@ -161,19 +192,6 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
             _moveGoal.value -= 10
         }
     }
-
-    fun setHealthDetails(age: String, height: String, weight: String, sex: String) {
-        // Assuming you have a StepCounterViewModel class where you define this function
-        // You can perform whatever action you want with the health details here
-        // For example, you can save them to a database or update some state in the view model
-        // Replace the println statements with your actual implementation
-        println("Age: $age")
-        println("Height: $height")
-        println("Weight: $weight")
-        println("Sex: $sex")
-    }
-
-
 
     private fun calculateCalories(steps: Int): Double {
         return steps * 0.04 // Simplified calorie calculation. Adjust based on actual use case.

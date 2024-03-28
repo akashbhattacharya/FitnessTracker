@@ -115,6 +115,9 @@ dependencies {
     implementation ("androidx.compose.material3:material3:1.0.0-alpha03")
     implementation ("androidx.activity:activity-compose:1.4.0")
     implementation ("com.google.android.material:material:1.4.0")
+    implementation ("com.google.android.gms:play-services-fitness:20.0.0")
+    implementation ("com.google.android.gms:play-services-auth:19.0.0")
+
 
 
 

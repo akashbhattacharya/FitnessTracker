@@ -2,7 +2,7 @@ package com.example.testapp.ui.theme
 
 data class HealthDetails(
     val age: Int,
-    val weight: Int,
-    val height: String,
+    val weight: Double,
+    val height: Double,
     val sex: String
 )

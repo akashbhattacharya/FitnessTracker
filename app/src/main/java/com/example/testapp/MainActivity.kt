@@ -9,11 +9,9 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -207,19 +204,23 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Save button
         Button(onClick = {
-            // Save health details
+            val age = selectedAge?.toIntOrNull() ?: 0
+            val height = selectedHeight?.toDoubleOrNull() ?: 0.0
+            val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
             viewModel.setHealthDetails(
-                selectedAge ?: "",
-                selectedHeight ?: "",
-                selectedWeight ?: "",
+                height,
+                weight,
+                age,
                 selectedSex ?: ""
             )
             navController.navigateUp()
         }) {
             Text("Save")
         }
+
+
+
     }
 }
 
@@ -282,6 +283,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
 
     val progress = (steps.toFloat() / goal).coerceIn(0f, 1f)
     val goalText = "$steps / $goal"
+    val distance = viewModel.calculateDistance(steps, 0.75)
 
     Column(
         modifier = Modifier
@@ -294,7 +296,8 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
         Spacer(modifier = Modifier.height(16.dp)) // Create space between progress bar and text
         Text(text = "Steps: $steps")
         Text(text = "Calories: ${calories.toInt()} / $goal kcal")
-       // Text(text = "Goal: $goalText")
+        Text(text = "Distance: ${String.format("%.2f", distance)} km") // Display distance
+        // Text(text = "Goal: $goalText")
         Button(onClick = { viewModel.resetSteps() }) {
             Text("Reset Steps")
         }
@@ -401,7 +404,6 @@ fun ChangeMoveGoalScreen(navController: NavController, viewModel: StepCounterVie
         }
     }
 }
-
 
 
 
