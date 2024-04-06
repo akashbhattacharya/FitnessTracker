@@ -32,10 +32,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         createNotificationChannel()
         setContent {
-            TestAppTheme {
+            val viewModel: StepCounterViewModel = viewModel()
+            val isDarkModeEnabled by viewModel.isDarkModeEnabled.collectAsState()
+
+            TestAppTheme(darkTheme = isDarkModeEnabled) {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    val viewModel: StepCounterViewModel = viewModel()
                     StepCounterApp(viewModel)
                 }
             }
@@ -79,7 +81,7 @@ fun StepCounterApp(viewModel: StepCounterViewModel) {
             composable("healthDetails") { HealthDetailsScreen(navController, viewModel) }
             composable("changeMoveGoal") { ChangeMoveGoalScreen(navController, viewModel) } // Pass viewModel here
             composable("unitsOfMeasure") { UnitsOfMeasureScreen(navController) }
-            composable("notifications") { NotificationsScreen(navController) }
+            composable("notifications") { NotificationsScreen(navController,viewModel) }
         }
     }
 }
@@ -267,10 +269,20 @@ fun UnitsOfMeasureScreen(navController: NavController) {
 }
 
 @Composable
-fun NotificationsScreen(navController: NavController) {
+fun NotificationsScreen(navController: NavController, viewModel: StepCounterViewModel) {
+    val isDarkModeEnabled by viewModel.isDarkModeEnabled.collectAsState()
+
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Notifications", style = MaterialTheme.typography.h5)
-        // Implement UI for notifications settings here
+        // Existing UI components...
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = { viewModel.toggleDarkMode() }
+        ) {
+            Text(if (isDarkModeEnabled) "Disable Dark Mode" else "Enable Dark Mode")
+        }
     }
 }
 
@@ -284,6 +296,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
     val progress = (calories.toFloat() / goal).coerceIn(0f, 1f)
     val goalText = "$steps / $goal"
     val distance = viewModel.calculateDistance(steps, 0.75)
+    val isDarkModeEnabled by viewModel.isDarkModeEnabled.collectAsState()
 
     Column(
         modifier = Modifier
@@ -292,7 +305,12 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
         verticalArrangement = Arrangement.Center, // Center vertically in the space
         horizontalAlignment = Alignment.CenterHorizontally // Center horizontally
     ) {
-        CircularProgressBar(calories = calories.toInt(), goalCalories = goal, modifier = Modifier.size(275.dp))
+        CircularProgressBar(
+            calories = calories.toInt(),
+            goalCalories = goal,
+            darkMode = isDarkModeEnabled,
+            modifier = Modifier.size(275.dp)
+        )
         Spacer(modifier = Modifier.height(16.dp)) // Create space between progress bar and text
         Text(text = "Steps: $steps")
         Text(text = "Calories: ${calories.toInt()} / $goal kcal")
@@ -302,12 +320,12 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
             Text("Reset Steps")
         }
         Button(
-            onClick = { navController.navigate("weeklySteps") },
+            onClick = { navController.navigate("SleepTracker") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text("View Weekly Steps")
+            Text("Sleep Tracker")
         }
 
         // Show congratulations message if goal reached
@@ -318,14 +336,25 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
 }
 
 
-
 @Composable
-fun CircularProgressBar(calories: Int, goalCalories: Int, modifier: Modifier = Modifier) {
+fun CircularProgressBar(
+    calories: Int,
+    goalCalories: Int,
+    darkMode: Boolean,
+    modifier: Modifier = Modifier
+) {
     val progress = (calories.toFloat() / goalCalories).coerceIn(0f, 1f)
-    CircularProgressIndicator(progress = progress, modifier = modifier)
+    val progressColor = if (darkMode) Color.Yellow else MaterialTheme.colors.primary
+
+    CircularProgressIndicator(
+        progress = progress,
+        modifier = modifier,
+        color = progressColor
+    )
     Spacer(modifier = Modifier.height(8.dp)) // Spacing between progress bar and text
     Text(text = "${(progress * 100).toInt()}% of goal")
 }
+
 
 
 @Preview(showBackground = true)

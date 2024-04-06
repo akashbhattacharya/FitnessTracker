@@ -41,6 +41,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private val _moveGoal = MutableStateFlow(1000)
     val moveGoal: StateFlow<Int> = _moveGoal
 
+    private val _isDarkModeEnabled = MutableStateFlow(false)
+    val isDarkModeEnabled: StateFlow<Boolean> = _isDarkModeEnabled
+
     private var healthDetails: HealthDetails? = null
 
     private val MALE_BMR_CONSTANT = 66.5 // Constant for male BMR calculation
@@ -56,6 +59,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
         // Start checking for inactivity periodically
         startInactivityCheck()
+        loadDarkModePreference()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -195,6 +199,24 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     private fun calculateCalories(steps: Int): Double {
         return steps * 0.04 // Simplified calorie calculation. Adjust based on actual use case.
+    }
+
+    fun toggleDarkMode() {
+        _isDarkModeEnabled.value = !_isDarkModeEnabled.value
+        saveDarkModePreference()
+    }
+
+    private fun loadDarkModePreference() {
+        val sharedPrefs = getApplication<Application>().getSharedPreferences("appPreferences", Context.MODE_PRIVATE)
+        _isDarkModeEnabled.value = sharedPrefs.getBoolean("darkMode", false)
+    }
+
+    private fun saveDarkModePreference() {
+        val sharedPrefs = getApplication<Application>().getSharedPreferences("appPreferences", Context.MODE_PRIVATE)
+        with(sharedPrefs.edit()) {
+            putBoolean("darkMode", _isDarkModeEnabled.value)
+            apply()
+        }
     }
 
     override fun onCleared() {
