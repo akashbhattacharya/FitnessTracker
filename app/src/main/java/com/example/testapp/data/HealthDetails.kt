@@ -1,4 +1,4 @@
-package com.example.testapp.ui.theme
+package com.example.testapp.data
 
 data class HealthDetails(
     val age: Int,

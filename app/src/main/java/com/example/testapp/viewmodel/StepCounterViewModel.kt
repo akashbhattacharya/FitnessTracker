@@ -1,4 +1,4 @@
-package com.example.testapp
+package com.example.testapp.viewmodel
 
 import android.app.Application
 import android.app.NotificationChannel
@@ -12,7 +12,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.testapp.ui.theme.HealthDetails
+import com.example.testapp.data.HealthDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +40,14 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _moveGoal = MutableStateFlow(1000)
     val moveGoal: StateFlow<Int> = _moveGoal
+
+    private val _motivationalMessages = listOf(
+        "Keep going, you're doing great!",
+        "One step at a time, you'll get there!",
+        "You're making progress, don't give up!",
+        "Believe in yourself, you can do it!",
+        "Every step counts towards your goal!"
+    )
 
     private val _isDarkModeEnabled = MutableStateFlow(false)
     val isDarkModeEnabled: StateFlow<Boolean> = _isDarkModeEnabled
@@ -123,30 +131,77 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         lastAccelerationMagnitude = accelerationMagnitude.toDouble()
     }
 
-    private fun sendStepMilestoneNotification(stepCount: Int) {
-        if (stepCount % 1000 == 0) {
-            val notificationBuilder = NotificationCompat.Builder(getApplication(), "stepCounterChannel")
-                .setSmallIcon(android.R.drawable.stat_notify_chat)
-                .setContentTitle("Congratulations!")
-                .setContentText("You've reached $stepCount steps!")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-            val notificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.notify(stepCount, notificationBuilder.build())
+    // Function to update steps and calories
+    fun updateStepsAndCalories(newSteps: Int, newCalories: Double) {
+        viewModelScope.launch {
+            _steps.value = newSteps
+            _calories.value = newCalories
+            checkStepMilestone()
+            checkCalorieMilestone()
         }
     }
 
+    // Function to check if the user has reached a step milestone
+    private fun checkStepMilestone() {
+        val goal = _moveGoal.value
+        if (_steps.value % goal == 0 && _steps.value != 0) {
+            sendStepMilestoneNotification(_steps.value)
+        }
+    }
+
+    // Function to check if the user has reached a calorie milestone (half of the goal)
+    private fun checkCalorieMilestone() {
+        val goal = _moveGoal.value
+        val halfGoal = goal / 2
+        if (_calories.value >= halfGoal && _calories.value < goal) {
+            sendCalorieMilestoneNotification()
+        }
+    }
+
+    // Function to send a notification for reaching a step milestone
+    // Function to send a notification for reaching a step milestone
+    private fun sendStepMilestoneNotification(value: Int) {
+        val notificationBuilder = NotificationCompat.Builder(getApplication(), "stepCounterChannel")
+            .setSmallIcon(android.R.drawable.stat_notify_chat)
+            .setContentTitle("Almost There!")
+            .setContentText("You've reached 80% of your step goal. Keep going!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        val notificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(STEP_MILESTONE_NOTIFICATION_ID, notificationBuilder.build())
+    }
+
+    // Function to send a notification for reaching a calorie milestone
+    private fun sendCalorieMilestoneNotification() {
+        val message = _motivationalMessages.random() // Get a random motivational message
+        val notificationBuilder = NotificationCompat.Builder(getApplication(), CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.stat_notify_chat)
+            .setContentTitle("Keep Going!")
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        val notificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(CALORIE_MILESTONE_NOTIFICATION_ID, notificationBuilder.build())
+    }
+
+    // Function to create notification channel
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Step Counter Channel"
-            val descriptionText = "Notifications for step milestones"
+            val descriptionText = "Notifications for step and calorie milestones"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("stepCounterChannel", name, importance).apply {
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
             }
             val notificationManager: NotificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
+    }
+
+    companion object {
+        private const val CHANNEL_ID = "stepCounterChannel"
+        private const val STEP_MILESTONE_NOTIFICATION_ID = 1
+        private const val CALORIE_MILESTONE_NOTIFICATION_ID = 2
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
