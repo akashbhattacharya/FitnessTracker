@@ -129,19 +129,37 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            val age = selectedAge?.toIntOrNull() ?: 0
-            val height = selectedHeight?.toDoubleOrNull() ?: 0.0
-            val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
-            viewModel.setHealthDetails(
-                height,
-                weight,
-                age,
-                selectedSex ?: ""
-            )
-            navController.navigateUp()
-        }) {
-            Text("Save")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(onClick = {
+                val age = selectedAge?.toIntOrNull() ?: 0
+                val height = selectedHeight?.toDoubleOrNull() ?: 0.0
+                val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
+                viewModel.setHealthDetails(
+                    height,
+                    weight,
+                    age,
+                    selectedSex ?: ""
+                )
+                navController.navigateUp()
+            }) {
+                Text("Save")
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Button(
+                onClick = { viewModel.toggleDarkMode() }
+            ) {
+                Text(if (viewModel.isDarkModeEnabled.value) "Disable Dark Mode" else "Enable Dark Mode")
+            }
         }
+
+
     }
 }
+
+
+

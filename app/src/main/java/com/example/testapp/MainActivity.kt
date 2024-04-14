@@ -27,6 +27,8 @@ import androidx.navigation.compose.*
 import com.example.testapp.screens.HealthDetailsScreen
 import com.example.testapp.ui.theme.TestAppTheme
 import com.example.testapp.viewmodel.StepCounterViewModel
+import androidx.compose.material.icons.filled.ArrowBack
+
 
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +68,16 @@ fun StepCounterApp(viewModel: StepCounterViewModel) {
         topBar = {
             TopAppBar(
                 title = { Text("Step Counter") },
+                navigationIcon = if (navController.currentBackStackEntryAsState().value?.destination?.route != "main") {
+                    // Show back button if not on the main screen
+                    {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                } else {
+                    null
+                },
                 actions = {
                     // User icon button added here
                     IconButton(onClick = { navController.navigate("userSettings") }) {
@@ -107,15 +119,10 @@ fun StepCounterApp(viewModel: StepCounterViewModel) {
                     navController
                 )
             }
-            composable("notifications") {
-                com.example.testapp.screens.NotificationsScreen(
-                    navController,
-                    viewModel
-                )
             }
         }
     }
-}
+
 
 
 @Preview(showBackground = true)

@@ -31,10 +31,6 @@ fun UserSettingsScreen(navController: NavController) {
         Button(onClick = { navController.navigate("unitsOfMeasure") }) {
             Text("Units of Measure")
         }
-        Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = { navController.navigate("notifications") }) {
-            Text("Notifications")
-        }
     }
 }
