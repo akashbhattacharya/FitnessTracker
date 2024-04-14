@@ -114,11 +114,6 @@ fun StepCounterApp(viewModel: StepCounterViewModel) {
                     viewModel
                 )
             } // Pass viewModel here
-            composable("unitsOfMeasure") {
-                com.example.testapp.screens.UnitsOfMeasureScreen(
-                    navController
-                )
-            }
             }
         }
     }
