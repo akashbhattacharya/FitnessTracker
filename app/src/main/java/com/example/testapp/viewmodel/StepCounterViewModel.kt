@@ -11,8 +11,12 @@ import android.hardware.SensorManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.testapp.CalorieApplication
 import com.example.testapp.data.HealthDetails
+import com.example.testapp.data.UHDRepository
+import com.example.testapp.data.UserHealthDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +24,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
+    private val appContainer = (application as CalorieApplication).container
+    private val uhdRepository = appContainer.uhdRepository
     private var sensorManager: SensorManager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private var stepSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
     private var accelerometerSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
@@ -206,9 +212,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
-    fun setHealthDetails(height: Double, weight: Double, age: Int, sex: String) {
-        healthDetails = HealthDetails(age, weight, height, sex)
-        // Rest of your implementation..
+    suspend fun setHealthDetails(height: Double, weight: Double, age: Int, sex: String) {
+        //healthDetails = HealthDetails(age, weight, height, sex)
+        uhdRepository.insertUHD(UserHealthDetails(age, weight, height, sex))
 
 
     // Calculate BMR based on user details
