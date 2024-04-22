@@ -1,6 +1,5 @@
 package com.example.testapp.screens
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -10,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.StepCounterViewModel
-
 
 @Composable
 fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel) {
@@ -25,17 +23,14 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
     var weightUnit by remember { mutableStateOf("kg") }
     var heightUnit by remember { mutableStateOf("cm") }
 
-
     val ageOptions = (18..100).map { it.toString() }
     val heightOptions = (30..275).map { it.toString() }
     val weightOptions = (1..454).map { it.toString() }
     val sexOptions = listOf("Male", "Female")
 
-
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Health Details", style = MaterialTheme.typography.h5)
         Spacer(modifier = Modifier.height(16.dp))
-
 
         // Age selection
         Box(
@@ -60,9 +55,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
-
 
         // Height selection with unit conversion
         Box(
@@ -87,9 +80,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
-
 
         // Weight selection with unit conversion
         Row {
@@ -115,9 +106,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
                 }
             }
 
-
             Spacer(modifier = Modifier.width(16.dp))
-
 
             Row(
                 modifier = Modifier.fillMaxWidth(0.5f),
@@ -133,9 +122,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
                 )
                 Text("kg")
 
-
                 Spacer(modifier = Modifier.width(8.dp))
-
 
                 Checkbox(
                     checked = weightUnit == "lbs",
@@ -148,9 +135,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
-
 
         // Sex selection
         Box(
@@ -175,9 +160,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
-
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -198,9 +181,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
                 Text("Save")
             }
 
-
             Spacer(modifier = Modifier.width(16.dp))
-
 
             Button(
                 onClick = { viewModel.toggleDarkMode() }
@@ -211,7 +192,6 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
     }
 }
 
-
 private fun buildWeightString(weight: String?, unit: String): String {
     val weightValue = weight?.toDoubleOrNull() ?: 0.0
     val convertedWeight = if (unit == "kg") {
@@ -221,7 +201,6 @@ private fun buildWeightString(weight: String?, unit: String): String {
     }
     return String.format("%.2f", weightValue) + " $unit" + " (${String.format("%.2f", convertedWeight)} ${if (unit == "kg") "lbs" else "kg"})"
 }
-
 
 private fun buildHeightString(height: String?, unit: String): String {
     val heightValue = height?.toDoubleOrNull() ?: 0.0
@@ -234,24 +213,18 @@ private fun buildHeightString(height: String?, unit: String): String {
 }
 
 
-
-
 private fun convertKgToLbs(kg: Double): Double {
     return kg * 2.20462
 }
-
 
 private fun convertLbsToKg(lbs: Double): Double {
     return lbs / 2.20462
 }
 
-
 private fun convertCmToFeet(cm: Double): Double {
     return cm * 0.0328084
 }
 
-
 private fun convertFeetToCm(feet: Double): Double {
     return feet / 0.0328084
 }
-
