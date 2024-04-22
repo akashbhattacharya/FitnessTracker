@@ -1,18 +1,19 @@
 package com.example.testapp.screens
 
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.StepCounterViewModel
-import kotlinx.coroutines.launch
+
 
 @Composable
-fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel ) {
+fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel) {
     var selectedAge by remember { mutableStateOf<String?>(null) }
     var isAgeDropdownExpanded by remember { mutableStateOf(false) } // Age dropdown expanded state
     var selectedHeight by remember { mutableStateOf<String?>(null) }
@@ -21,18 +22,20 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
     var isWeightDropdownExpanded by remember { mutableStateOf(false) } // Weight dropdown expanded state
     var selectedSex by remember { mutableStateOf<String?>(null) }
     var isSexDropdownExpanded by remember { mutableStateOf(false) } // Sex dropdown expanded state
+    var weightUnit by remember { mutableStateOf("kg") }
+    var heightUnit by remember { mutableStateOf("cm") }
+
 
     val ageOptions = (18..100).map { it.toString() }
     val heightOptions = (30..275).map { it.toString() }
     val weightOptions = (1..454).map { it.toString() }
     val sexOptions = listOf("Male", "Female")
 
-    val coroutineScope = rememberCoroutineScope()
-
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Health Details", style = MaterialTheme.typography.h5)
         Spacer(modifier = Modifier.height(16.dp))
+
 
         // Age selection
         Box(
@@ -57,14 +60,16 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Height selection
+
+        // Height selection with unit conversion
         Box(
             modifier = Modifier.fillMaxWidth().clickable { isHeightDropdownExpanded = true }
         ) {
             Text(
-                text = selectedHeight ?: "Select Height (cm)",
+                text = buildHeightString(selectedHeight, heightUnit),
                 modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
             )
             DropdownMenu(
@@ -82,32 +87,70 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Weight selection
-        Box(
-            modifier = Modifier.fillMaxWidth().clickable { isWeightDropdownExpanded = true }
-        ) {
-            Text(
-                text = selectedWeight ?: "Select Weight (kg)",
-                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-            )
-            DropdownMenu(
-                expanded = isWeightDropdownExpanded,
-                onDismissRequest = { isWeightDropdownExpanded = false }
+
+        // Weight selection with unit conversion
+        Row {
+            Box(
+                modifier = Modifier.fillMaxWidth(0.5f).clickable { isWeightDropdownExpanded = true }
             ) {
-                weightOptions.forEach { weight ->
-                    DropdownMenuItem(onClick = {
-                        selectedWeight = weight
-                        isWeightDropdownExpanded = false
-                    }) {
-                        Text(weight)
+                Text(
+                    text = buildWeightString(selectedWeight, weightUnit),
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+                )
+                DropdownMenu(
+                    expanded = isWeightDropdownExpanded,
+                    onDismissRequest = { isWeightDropdownExpanded = false }
+                ) {
+                    weightOptions.forEach { weight ->
+                        DropdownMenuItem(onClick = {
+                            selectedWeight = weight
+                            isWeightDropdownExpanded = false
+                        }) {
+                            Text(weight)
+                        }
                     }
                 }
             }
+
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+
+            Row(
+                modifier = Modifier.fillMaxWidth(0.5f),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = weightUnit == "kg",
+                    onCheckedChange = {
+                        weightUnit = if (it) "kg" else "lbs"
+                    },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("kg")
+
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+
+                Checkbox(
+                    checked = weightUnit == "lbs",
+                    onCheckedChange = {
+                        weightUnit = if (it) "lbs" else "kg"
+                    },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+                Text("lbs")
+            }
         }
 
+
         Spacer(modifier = Modifier.height(16.dp))
+
 
         // Sex selection
         Box(
@@ -132,24 +175,83 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             }
         }
 
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            val age = selectedAge?.toIntOrNull() ?: 0
-            val height = selectedHeight?.toDoubleOrNull() ?: 0.0
-            val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
-            coroutineScope.launch {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(onClick = {
+                val age = selectedAge?.toIntOrNull() ?: 0
+                val height = selectedHeight?.toDoubleOrNull() ?: 0.0
+                val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
                 viewModel.setHealthDetails(
                     height,
                     weight,
                     age,
                     selectedSex ?: ""
                 )
+                navController.navigateUp()
+            }) {
+                Text("Save")
             }
 
-            navController.navigateUp()
-        }) {
-            Text("Save")
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+
+            Button(
+                onClick = { viewModel.toggleDarkMode() }
+            ) {
+                Text(if (viewModel.isDarkModeEnabled.value) "Disable Dark Mode" else "Enable Dark Mode")
+            }
         }
     }
 }
+
+
+private fun buildWeightString(weight: String?, unit: String): String {
+    val weightValue = weight?.toDoubleOrNull() ?: 0.0
+    val convertedWeight = if (unit == "kg") {
+        convertKgToLbs(weightValue)
+    } else {
+        convertLbsToKg(weightValue)
+    }
+    return String.format("%.2f", weightValue) + " $unit" + " (${String.format("%.2f", convertedWeight)} ${if (unit == "kg") "lbs" else "kg"})"
+}
+
+
+private fun buildHeightString(height: String?, unit: String): String {
+    val heightValue = height?.toDoubleOrNull() ?: 0.0
+    val convertedHeight = if (unit == "cm") {
+        convertCmToFeet(heightValue)
+    } else {
+        convertFeetToCm(heightValue)
+    }
+    return String.format("%.2f", heightValue) + " $unit" + " (${String.format("%.2f", convertedHeight)} ${if (unit == "cm") "feet" else "cm"})"
+}
+
+
+
+
+private fun convertKgToLbs(kg: Double): Double {
+    return kg * 2.20462
+}
+
+
+private fun convertLbsToKg(lbs: Double): Double {
+    return lbs / 2.20462
+}
+
+
+private fun convertCmToFeet(cm: Double): Double {
+    return cm * 0.0328084
+}
+
+
+private fun convertFeetToCm(feet: Double): Double {
+    return feet / 0.0328084
+}
+
