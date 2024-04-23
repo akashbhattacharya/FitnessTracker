@@ -208,7 +208,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     fun setHealthDetails(height: Double, weight: Double, age: Int, sex: String) {
         healthDetails = HealthDetails(age, weight, height, sex)
-        // Rest of your implementation..
+
 
 
     // Calculate BMR based on user details
