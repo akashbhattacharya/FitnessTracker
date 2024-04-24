@@ -3,12 +3,16 @@ package com.example.testapp.viewmodel
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
@@ -20,14 +24,18 @@ import com.example.testapp.data.UserHealthDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
+@RequiresApi(Build.VERSION_CODES.CUPCAKE)
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
     private val appContainer = (application as CalorieApplication).container
     private val uhdRepository = appContainer.uhdRepository
     private var sensorManager: SensorManager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    @RequiresApi(Build.VERSION_CODES.CUPCAKE)
     private var stepSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+    @RequiresApi(Build.VERSION_CODES.CUPCAKE)
     private var accelerometerSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
     private var lastAccelerationMagnitude = 0.0
@@ -74,6 +82,14 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         // Start checking for inactivity periodically
         startInactivityCheck()
         loadDarkModePreference()
+
+        viewModelScope.launch {
+            uhdRepository.getDetailStream().collect { userHealthDetails ->
+                // Update steps and calories with initial values from the database
+                healthDetails = HealthDetails(userHealthDetails.age,userHealthDetails.weight,userHealthDetails.height,userHealthDetails.sex)
+                _moveGoal.value = calculateBMR(healthDetails!!).toInt()
+            }
+        }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -213,21 +229,20 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     suspend fun setHealthDetails(height: Double, weight: Double, age: Int, sex: String) {
-        //healthDetails = HealthDetails(age, weight, height, sex)
-        uhdRepository.insertUHD(UserHealthDetails(age, weight, height, sex))
-
+        healthDetails = HealthDetails(age, weight, height, sex)
+        uhdRepository.insertUHD(UserHealthDetails(1,age, weight, height, sex))
 
     // Calculate BMR based on user details
-        val bmr = calculateBMR()
+        val bmr = calculateBMR(healthDetails!!)
         // Set default move goal based on BMR
         setDefaultMoveGoal(bmr)
     }
 
-    private fun calculateBMR(): Double {
-        return if (healthDetails?.sex.equals("male", ignoreCase = true)) {
-            MALE_BMR_CONSTANT + (WEIGHT_CONSTANT * healthDetails?.weight!!) + (HEIGHT_CONSTANT * healthDetails?.height!!) - (AGE_CONSTANT * healthDetails?.age!!)
+    private suspend fun calculateBMR(userHealthDetails: HealthDetails): Double {
+         return if (userHealthDetails.sex.equals("male", ignoreCase = true)) {
+             MALE_BMR_CONSTANT + (WEIGHT_CONSTANT * userHealthDetails.weight!!) + (HEIGHT_CONSTANT * userHealthDetails.height!!) - (AGE_CONSTANT * userHealthDetails.age!!)
         } else {
-            FEMALE_BMR_CONSTANT + (WEIGHT_CONSTANT * healthDetails?.weight!!) + (HEIGHT_CONSTANT * healthDetails?.height!!) - (AGE_CONSTANT * healthDetails?.age!!)
+            FEMALE_BMR_CONSTANT + (WEIGHT_CONSTANT * userHealthDetails.weight!!) + (HEIGHT_CONSTANT * userHealthDetails.height!!) - (AGE_CONSTANT * userHealthDetails.age!!)
         }
     }
 

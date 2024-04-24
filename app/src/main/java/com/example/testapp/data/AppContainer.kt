@@ -8,6 +8,6 @@ interface AppContainer {
 }
 class AppDataContainer(private val context: Context) : AppContainer {
     override val uhdRepository: UHDRepository by lazy {
-        RealUHDRepository(UHDDatabase.getDatabase(context).uhdDao())//bug
+        RealUHDRepository(UHDDatabase.getDatabase(context).uhdDao())
     }
 }
