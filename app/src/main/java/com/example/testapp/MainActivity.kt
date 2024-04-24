@@ -64,47 +64,38 @@ fun StepCounterApp(viewModel: StepCounterViewModel) {
             )
         }
     ) { paddingValues ->
-        NavHost(navController = navController, startDestination = "main") {
-            composable("main") {
-                com.example.testapp.screens.StepCounterUI(
-                    navController,
-                    paddingValues,
-                    viewModel
-                )
-            }
-            composable("weeklySteps") { com.example.testapp.screens.WeeklyStepsScreen() }
-            // Add the composable for user settings screen
-            composable("userSettings") {
-                com.example.testapp.screens.UserSettingsScreen(
-                    navController
-                )
-            }
-            composable("healthDetails") {
-                com.example.testapp.screens.HealthDetailsScreen(
-                    navController,
-                    viewModel
-                )
-            }
-            composable("changeMoveGoal") {
-                com.example.testapp.screens.ChangeMoveGoalScreen(
-                    navController,
-                    viewModel
-                )
-            } // Pass viewModel here
-            composable("unitsOfMeasure") {
-                com.example.testapp.screens.UnitsOfMeasureScreen(
-                    navController
-                )
-            }
-            composable("notifications") {
-                com.example.testapp.screens.NotificationsScreen(
-                    navController,
-                    viewModel
-                )
+            NavHost(navController = navController, startDestination = "main") {
+                composable("main") {
+                    com.example.testapp.screens.StepCounterUI(
+                        navController,
+                        paddingValues,
+                        viewModel
+                    )
+                }
+                composable("weeklySteps") { com.example.testapp.screens.WeeklyStepsScreen() }
+                composable("userSettings") {
+                    com.example.testapp.screens.UserSettingsScreen(
+                        navController
+                    )
+                }
+                composable("healthDetails") {
+                    com.example.testapp.screens.HealthDetailsScreen(
+                        navController,
+                        viewModel
+                    )
+                }
+                composable("foodList"){
+                    com.example.testapp.screens.FoodListScreen(viewModel, navController)
+                }
+                composable("changeMoveGoal") {
+                    com.example.testapp.screens.ChangeMoveGoalScreen(
+                        navController,
+                        viewModel
+                    )
+                }
             }
         }
     }
-}
 
 
 @Preview(showBackground = true)
