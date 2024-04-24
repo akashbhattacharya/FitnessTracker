@@ -4,7 +4,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -62,7 +61,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -81,7 +79,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setupUI() {
-        createNotificationChannels()
+        createNotificationChannel()
         setContent {
             val viewModel: StepCounterViewModel = viewModel()
             val isDarkModeEnabled by viewModel.isDarkModeEnabled.collectAsState()
@@ -95,30 +93,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun createNotificationChannels() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val stepCounterChannel = NotificationChannel(
-                "stepCounterChannel",
-                "Step Counter Notifications",
-                NotificationManager.IMPORTANCE_DEFAULT
-            ).apply {
-                description = "Notifications for step milestones"
-            }
-
-            val mealReminderChannel = NotificationChannel(
-                "meal_reminder_channel",
-                "Meal Reminder Channel",
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = "Channel for Meal Time Reminders"
-            }
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(stepCounterChannel)
-            notificationManager.createNotificationChannel(mealReminderChannel)
+    private fun createNotificationChannel() {
+        val name = "Step Counter Notifications"
+        val descriptionText = "Notifications for step milestones"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel("stepCounterChannel", name, importance).apply {
+            description = descriptionText
         }
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
-
 
     @Composable
     fun StepCounterApp(viewModel: StepCounterViewModel) {
@@ -164,16 +149,6 @@ class MainActivity : ComponentActivity() {
                     com.example.testapp.screens.HealthDetailsScreen(
                         navController,
                         viewModel
-                    )
-                }
-                composable("setMealTimings") {
-                    com.example.testapp.screens.SetMealTimingsScreen(
-                        navController
-                    )
-                }
-                composable("achievementScreen") {
-                    com.example.testapp.screens.AchievementsScreen(
-
                     )
                 }
                 composable("changeMoveGoal") {

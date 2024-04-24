@@ -1,40 +1,23 @@
 package com.example.testapp.viewmodel
 
-import android.app.AlarmManager
 import android.app.Application
-
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-
-import java.time.LocalTime
-import androidx.lifecycle.MutableLiveData
-import android.util.Log
-import com.example.testapp.MealReminderReceiver
-import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ContentValues.TAG
+import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-
-import android.provider.Settings
-
+import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
-
+import androidx.compose.runtime.collectAsState
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
-
-
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.testapp.CalorieApplication
-
 import com.example.testapp.data.HealthDetails
 import com.example.testapp.data.UHDRepository
 import com.example.testapp.data.UserHealthDetails
@@ -43,20 +26,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-
 import kotlin.math.sqrt
-
-data class Achievement(
-    val milestone: Int,
-    val isAchieved: Boolean,
-    val dateAchieved: String? // ISO-8601 format
-)
-data class UserAchievement(
-    val userId: String,
-    val stepRecord: Long,
-    val achievements: List<Achievement>
-)
 
 @RequiresApi(Build.VERSION_CODES.CUPCAKE)
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
@@ -336,94 +306,4 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         super.onCleared()
         sensorManager.unregisterListener(this)
     }
-
-    var userAchievement by mutableStateOf(
-        UserAchievement("user123", 0, listOf(
-            Achievement(5000, true, null),
-            Achievement(10000, true, null),
-            Achievement(25000, true, null),
-            Achievement(50000, false, null),
-            Achievement(100000, false, null)
-        ))
-    )
-
-
-    fun updateSteps(newSteps: Long) {
-        val newAchievements = userAchievement.achievements.map { achievement ->
-            if (!achievement.isAchieved && newSteps >= achievement.milestone) {
-                achievement.copy(isAchieved = true, dateAchieved = LocalDate.now().toString())
-            } else {
-                achievement
-            }
-        }
-        userAchievement = userAchievement.copy(stepRecord = newSteps, achievements = newAchievements)
-    }
-
-    val breakfastTime = MutableLiveData<LocalTime>()
-    val lunchTime = MutableLiveData<LocalTime>()
-    val snackTime = MutableLiveData<LocalTime>()
-    val dinnerTime = MutableLiveData<LocalTime>()
-
-    fun saveMealTimes(context: Context) {
-        // Example logging action
-        breakfastTime.value?.let {
-            scheduleMealTimeReminder(context, "Breakfast", it)
-            Log.d("MealTimeViewModel", "Breakfast time set and alarm scheduled for: ${it.format(
-                DateTimeFormatter.ISO_LOCAL_TIME)}")
-        }
-
-        lunchTime.value?.let {
-            scheduleMealTimeReminder(context, "Lunch", it)
-            Log.d("MealTimeViewModel", "Lunch time set and alarm scheduled for: ${it.format(
-                DateTimeFormatter.ISO_LOCAL_TIME)}")
-        }
-
-        snackTime.value?.let {
-            scheduleMealTimeReminder(context, "Snack", it)
-            Log.d("MealTimeViewModel", "Snack time set and alarm scheduled for: ${it.format(
-                DateTimeFormatter.ISO_LOCAL_TIME)}")
-        }
-
-        dinnerTime.value?.let {
-            scheduleMealTimeReminder(context, "Dinner", it)
-            Log.d("MealTimeViewModel", "Dinner time set and alarm scheduled for: ${it.format(
-                DateTimeFormatter.ISO_LOCAL_TIME)}")
-        }
-    }
-
-    private fun scheduleMealTimeReminder(context: Context, mealName: String, time: LocalTime) {
-        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, MealReminderReceiver::class.java).apply {
-            putExtra("mealName", mealName)
-        }
-        val requestCode = mealName.hashCode()
-        val alarmIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmMgr.canScheduleExactAlarms()) {
-                val permissionIntent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(permissionIntent)
-                return
-            }
-        }
-
-        val alarmTime = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, time.hour)
-            set(Calendar.MINUTE, time.minute)
-            set(Calendar.SECOND, 0)
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmMgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, alarmIntent)
-        } else {
-            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, alarmIntent)
-        }
-    }
 }
-
-
-
-
-
-
