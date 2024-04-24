@@ -9,9 +9,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.StepCounterViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel) {
+
     var selectedAge by remember { mutableStateOf<String?>(null) }
     var isAgeDropdownExpanded by remember { mutableStateOf(false) } // Age dropdown expanded state
     var selectedHeight by remember { mutableStateOf<String?>(null) }
@@ -22,6 +24,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
     var isSexDropdownExpanded by remember { mutableStateOf(false) } // Sex dropdown expanded state
     var weightUnit by remember { mutableStateOf("kg") }
     var heightUnit by remember { mutableStateOf("cm") }
+    val coroutineScope = rememberCoroutineScope()
 
     val ageOptions = (18..100).map { it.toString() }
     val heightOptions = (30..275).map { it.toString() }
@@ -170,12 +173,14 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
                 val age = selectedAge?.toIntOrNull() ?: 0
                 val height = selectedHeight?.toDoubleOrNull() ?: 0.0
                 val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
-                viewModel.setHealthDetails(
-                    height,
-                    weight,
-                    age,
-                    selectedSex ?: ""
-                )
+                coroutineScope.launch {
+                    viewModel.setHealthDetails(
+                        height,
+                        weight,
+                        age,
+                        selectedSex ?: ""
+                    )
+                }
                 navController.navigateUp()
             }) {
                 Text("Save")
