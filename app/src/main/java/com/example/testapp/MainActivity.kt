@@ -128,9 +128,10 @@ class MainActivity : ComponentActivity() {
                             Icon(Icons.Filled.AccountCircle, contentDescription = "User Settings")
                         }
                     }
-                )
-            }
-        ) { paddingValues ->
+                }
+            )
+        }
+    ) { paddingValues ->
             NavHost(navController = navController, startDestination = "main") {
                 composable("main") {
                     com.example.testapp.screens.StepCounterUI(
@@ -151,6 +152,9 @@ class MainActivity : ComponentActivity() {
                         viewModel
                     )
                 }
+                composable("foodList"){
+                    com.example.testapp.screens.FoodListScreen(viewModel, navController)
+                }
                 composable("changeMoveGoal") {
                     com.example.testapp.screens.ChangeMoveGoalScreen(
                         navController,
@@ -160,7 +164,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     @Preview(showBackground = true)
     @Composable
     fun DefaultPreview() {

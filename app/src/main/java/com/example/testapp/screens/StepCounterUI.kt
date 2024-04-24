@@ -53,6 +53,15 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
             Text("Sleep Tracker")
         }
 
+        androidx.compose.material3.Button(
+            onClick = { navController.navigate("foodList")},
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp,0.dp,16.dp,0.dp)
+        ){
+            Text(text = "Today's Food list")
+        }
+
         // Show congratulations message if goal reached
         if (progress >= 1.0f) {
             Text("Congratulations! Goal Achieved!", color = Color.Green)

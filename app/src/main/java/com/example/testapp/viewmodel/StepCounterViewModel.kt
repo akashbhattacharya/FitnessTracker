@@ -23,10 +23,15 @@ import com.example.testapp.data.UHDRepository
 import com.example.testapp.data.UserHealthDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import kotlin.math.sqrt
+import java.util.*
 
 @RequiresApi(Build.VERSION_CODES.CUPCAKE)
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
@@ -54,6 +59,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     private val _moveGoal = MutableStateFlow(1000)
     val moveGoal: StateFlow<Int> = _moveGoal
+
+    private val _foodList = MutableStateFlow<List<FoodItem>>(emptyList())
+    val foodList: StateFlow<List<FoodItem>> = _foodList
 
     private val _motivationalMessages = listOf(
         "Keep going, you're doing great!",
@@ -98,7 +106,15 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
             }
         }
     }
+    val totalCalories: StateFlow<Int> = _foodList.map { list ->
+        list.sumOf { it.calories }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
 
+    fun addFoodItem(name: String, calories: Int) {
+        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+        val newItem = FoodItem(name, calories, timestamp)
+        _foodList.value = _foodList.value + newItem
+    }
     override fun onSensorChanged(event: SensorEvent?) {
         when (event?.sensor?.type) {
             Sensor.TYPE_STEP_COUNTER -> {
@@ -307,3 +323,4 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         sensorManager.unregisterListener(this)
     }
 }
+data class FoodItem(val name: String, val calories: Int, val timestamp : String)
