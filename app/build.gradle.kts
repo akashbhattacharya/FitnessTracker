@@ -118,7 +118,7 @@ dependencies {
     implementation ("com.google.android.gms:play-services-fitness:20.0.0")
     implementation ("com.google.android.gms:play-services-auth:19.0.0")
     implementation ("androidx.compose.material:material-icons-extended:1.1.0")
-
+    implementation ("androidx.compose.runtime:runtime-livedata:<compose_version>")
 
 
 

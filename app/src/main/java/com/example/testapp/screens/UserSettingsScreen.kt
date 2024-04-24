@@ -31,6 +31,11 @@ fun UserSettingsScreen(navController: NavController) {
         Button(onClick = { navController.navigate("unitsOfMeasure") }) {
             Text("Units of Measure")
         }
-
+        Button(onClick = { navController.navigate("setMealTimings") }) {
+            Text("Set Meal Timings")
+        }
+        Button(onClick = { navController.navigate("achievementScreen") }) {
+            Text("Achievements")
+        }
     }
 }
