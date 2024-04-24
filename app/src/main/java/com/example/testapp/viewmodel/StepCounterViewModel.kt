@@ -93,9 +93,16 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
         viewModelScope.launch {
             uhdRepository.getDetailStream().collect { userHealthDetails ->
-                // Update steps and calories with initial values from the database
-                healthDetails = HealthDetails(userHealthDetails.age,userHealthDetails.weight,userHealthDetails.height,userHealthDetails.sex)
-                _moveGoal.value = calculateBMR(healthDetails!!).toInt()
+                if(userHealthDetails != null) {
+                    // Update steps and calories with initial values from the database
+                    healthDetails = HealthDetails(
+                        userHealthDetails.age,
+                        userHealthDetails.weight,
+                        userHealthDetails.height,
+                        userHealthDetails.sex
+                    )
+                    _moveGoal.value = calculateBMR(healthDetails!!).toInt()
+                }
             }
         }
     }
