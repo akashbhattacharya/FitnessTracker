@@ -1,10 +1,14 @@
 package com.example.testapp.viewmodel
 
+
+
+import android.app.AlarmManager
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.ContentValues.TAG
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -12,48 +16,78 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.testapp.CalorieApplication
+import com.example.testapp.MealReminderReceiver
+import com.example.testapp.data.FoodListDetails
 import com.example.testapp.data.HealthDetails
-import com.example.testapp.data.UHDRepository
+import com.example.testapp.data.StepDetails
 import com.example.testapp.data.UserHealthDetails
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import kotlin.math.sqrt
+
+data class FoodItem(val name: String, val calories: Int, val timestamp: String)
+
+data class Achievement(
+    val milestone: Int,
+    val isAchieved: Boolean
+)
+data class UserAchievement(
+    val userId: String,
+    val achievements: List<Achievement>
+)
 
 @RequiresApi(Build.VERSION_CODES.CUPCAKE)
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
     private val appContainer = (application as CalorieApplication).container
     private val uhdRepository = appContainer.uhdRepository
     private var sensorManager: SensorManager = application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    @RequiresApi(Build.VERSION_CODES.CUPCAKE)
     private var stepSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-    @RequiresApi(Build.VERSION_CODES.CUPCAKE)
     private var accelerometerSensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
     private var lastAccelerationMagnitude = 0.0
-    private var stepThreshold = 12.0 // Example threshold, may need adjustment
+    private var stepThreshold = 12.0
     private var lastStepTime = System.currentTimeMillis()
 
-    private val TIME_THRESHOLD_IN_MILLIS = 2 * 60 * 1000 // Change to 2 minutes
-    private val INACTIVITY_CHECK_INTERVAL = 10 * 60 * 1000 // Check for inactivity every 10 minutes
-    private val INACTIVITY_NOTIFICATION_ID = 12345 // Unique notification ID
+    private val TIME_THRESHOLD_IN_MILLIS = 2 * 60 * 1000
+    private val INACTIVITY_CHECK_INTERVAL = 10 * 60 * 1000
+    private val INACTIVITY_NOTIFICATION_ID = 12345
 
     private val _steps = MutableStateFlow(0)
-    val steps: StateFlow<Int> = _steps
+    val steps: StateFlow<Int> = _steps.asStateFlow()
+
+    private val _total_steps = MutableStateFlow(0)
+    val total_steps: StateFlow<Int> = _total_steps.asStateFlow()
 
     private val _calories = MutableStateFlow(0.0)
     val calories: StateFlow<Double> = _calories
 
     private val _moveGoal = MutableStateFlow(1000)
     val moveGoal: StateFlow<Int> = _moveGoal
+
+    private val _foodList = MutableStateFlow<List<FoodItem>>(emptyList())
+    val foodList: StateFlow<List<FoodItem>> = _foodList
 
     private val _motivationalMessages = listOf(
         "Keep going, you're doing great!",
@@ -68,25 +102,32 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     private var healthDetails: HealthDetails? = null
 
-    private val MALE_BMR_CONSTANT = 66.5 // Constant for male BMR calculation
-    private val FEMALE_BMR_CONSTANT = 655.1 // Constant for female BMR calculation
-    private val HEIGHT_CONSTANT = 5.003 // Constant for height calculation in BMR formula
-    private val WEIGHT_CONSTANT = 13.75 // Constant for weight calculation in BMR formula
-    private val AGE_CONSTANT = 6.755 // Constant for age calculation in BMR formula
+    private val MALE_BMR_CONSTANT = 66.5
+    private val FEMALE_BMR_CONSTANT = 655.1
+    private val HEIGHT_CONSTANT = 5.003
+    private val WEIGHT_CONSTANT = 13.75
+    private val AGE_CONSTANT = 6.755
+
+    private var _achievements = MutableStateFlow(UserAchievement("user123", listOf(
+        Achievement(5000, false),
+        Achievement(10000, false),
+        Achievement(25000, false),
+        Achievement(50000, false),
+        Achievement(100000, false)
+    )))
+    val achievements: StateFlow<UserAchievement> = _achievements.asStateFlow()
 
     init {
         val sensorToRegister = stepSensor ?: accelerometerSensor
         sensorManager.registerListener(this, sensorToRegister, SensorManager.SENSOR_DELAY_UI)
         createNotificationChannel()
-
-        // Start checking for inactivity periodically
         startInactivityCheck()
         loadDarkModePreference()
 
+        observeStepsAndCheckAchievements()
         viewModelScope.launch {
             uhdRepository.getDetailStream().collect { userHealthDetails ->
-                if(userHealthDetails != null) {
-                    // Update steps and calories with initial values from the database
+                if (userHealthDetails != null) {
                     healthDetails = HealthDetails(
                         userHealthDetails.age,
                         userHealthDetails.weight,
@@ -97,26 +138,76 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
                 }
             }
         }
+            viewModelScope.launch{
+            uhdRepository.getAllFoodStream().collect{foodListDetails ->
+                if(foodListDetails != null){
+                    for(foodEntry in foodListDetails){
+                        val existingItem = _foodList.value.find { it.timestamp == foodEntry.timestamp }
+                        if (existingItem == null) {
+                            val foodItem = FoodItem(foodEntry.name, foodEntry.calories, foodEntry.timestamp)
+                            _foodList.value += foodItem
+                        }
+                    }
+                }
+            }
+        }
+            viewModelScope.launch {
+                uhdRepository.getStepStream().collect{stepDetails ->
+                    if(stepDetails!=null){
+                        _steps.value = stepDetails.tempSteps
+                        _total_steps.value = stepDetails.totalSteps
+                    }
+
+            }
+        }
+    }
+    suspend fun addFoodItem(name: String, calories: Int) {
+        val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+        val newItem = FoodItem(name, calories, timestamp)
+        _foodList.value += newItem
+        var food = FoodListDetails(name = name, calories = calories, timestamp = timestamp)
+        uhdRepository.insertFood(food)
+    }
+    val totalCalories: StateFlow<Int> = _foodList.map { list ->
+        list.sumOf { it.calories }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+
+    private fun observeStepsAndCheckAchievements() {
+        viewModelScope.launch {
+            total_steps.collectLatest { stepCount ->
+                updateAchievements(stepCount)
+            }
+        }
+    }
+
+    private fun updateAchievements(newSteps: Int) {
+        val currentAchievements = _achievements.value.achievements.map { achievement ->
+            if (!achievement.isAchieved && newSteps >= achievement.milestone) {
+                achievement.copy(isAchieved = true)
+            } else {
+                achievement
+            }
+        }
+        _achievements.value = UserAchievement(_achievements.value.userId, currentAchievements)
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
-        when (event?.sensor?.type) {
-            Sensor.TYPE_STEP_COUNTER -> {
-                val stepCount = event.values[0].toInt()
+        event?.let {
+            if (it.sensor.type == Sensor.TYPE_STEP_COUNTER) {
+                val stepCount = it.values[0].toInt()
                 viewModelScope.launch {
                     _steps.value = stepCount
                     _calories.value = calculateCalories(stepCount)
                     sendStepMilestoneNotification(stepCount)
                 }
-            }
-            Sensor.TYPE_ACCELEROMETER -> {
+            } else if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
                 val x = event.values[0]
                 val y = event.values[1]
                 val z = event.values[2]
-
                 val accelerationMagnitude = sqrt(x * x + y * y + z * z)
                 detectStep(accelerationMagnitude)
             }
+            else {}
         }
     }
 
@@ -152,6 +243,13 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         if (accelerationMagnitude > stepThreshold && currentTime - lastStepTime > 500) { // Debounce time of 500ms
             viewModelScope.launch {
                 _steps.value += 1
+                uhdRepository.getStepStream().collect(){stepDetails->
+                    if(stepDetails!=null) {
+                        var details =
+                            StepDetails(1, stepDetails.tempSteps + 1, stepDetails.totalSteps + 1)
+                        uhdRepository.insertSteps(details)
+                    }
+                }
                 _calories.value = calculateCalories(_steps.value)
                 sendStepMilestoneNotification(_steps.value)
             }
@@ -187,8 +285,6 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    // Function to send a notification for reaching a step milestone
-    // Function to send a notification for reaching a step milestone
     private fun sendStepMilestoneNotification(value: Int) {
         val notificationBuilder = NotificationCompat.Builder(getApplication(), "stepCounterChannel")
             .setSmallIcon(android.R.drawable.stat_notify_chat)
@@ -239,17 +335,17 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         healthDetails = HealthDetails(age, weight, height, sex)
         uhdRepository.insertUHD(UserHealthDetails(1,age, weight, height, sex))
 
-    // Calculate BMR based on user details
+        // Calculate BMR based on user details
         val bmr = calculateBMR(healthDetails!!)
         // Set default move goal based on BMR
         setDefaultMoveGoal(bmr)
     }
 
     private suspend fun calculateBMR(userHealthDetails: HealthDetails): Double {
-         return if (userHealthDetails.sex.equals("male", ignoreCase = true)) {
-             MALE_BMR_CONSTANT + (WEIGHT_CONSTANT * userHealthDetails.weight!!) + (HEIGHT_CONSTANT * userHealthDetails.height!!) - (AGE_CONSTANT * userHealthDetails.age!!)
+        return if (userHealthDetails.sex.equals("male", ignoreCase = true)) {
+            1.2*(MALE_BMR_CONSTANT + (WEIGHT_CONSTANT * userHealthDetails.weight!!) + (HEIGHT_CONSTANT * userHealthDetails.height!!) - (AGE_CONSTANT * userHealthDetails.age!!))
         } else {
-            FEMALE_BMR_CONSTANT + (WEIGHT_CONSTANT * userHealthDetails.weight!!) + (HEIGHT_CONSTANT * userHealthDetails.height!!) - (AGE_CONSTANT * userHealthDetails.age!!)
+           1.2*(FEMALE_BMR_CONSTANT + (WEIGHT_CONSTANT * userHealthDetails.weight!!) + (HEIGHT_CONSTANT * userHealthDetails.height!!) - (AGE_CONSTANT * userHealthDetails.age!!))
         }
     }
 
@@ -268,6 +364,14 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     fun resetSteps() {
         _steps.value = 0
         _calories.value = 0.0
+        viewModelScope.launch {
+            uhdRepository.getStepStream().collect() { stepDetails ->
+                if(stepDetails!=null) {
+                    var details = StepDetails(1, 0, stepDetails.totalSteps)
+                    uhdRepository.insertSteps(details)
+                }
+            }
+        }
     }
 
     fun increaseMoveGoal() {
@@ -306,4 +410,65 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         super.onCleared()
         sensorManager.unregisterListener(this)
     }
+
+    val breakfastTime = MutableLiveData<LocalTime>()
+    val lunchTime = MutableLiveData<LocalTime>()
+    val snackTime = MutableLiveData<LocalTime>()
+    val dinnerTime = MutableLiveData<LocalTime>()
+
+    fun saveMealTimes(context: Context) {
+        // Example logging action
+        breakfastTime.value?.let {
+            scheduleMealTimeReminder(context, "Breakfast", it)
+            Log.d("MealTimeViewModel", "Breakfast time set and alarm scheduled for: ${it.format(DateTimeFormatter.ISO_LOCAL_TIME)}")
+        }
+
+        lunchTime.value?.let {
+            scheduleMealTimeReminder(context, "Lunch", it)
+            Log.d("MealTimeViewModel", "Lunch time set and alarm scheduled for: ${it.format(DateTimeFormatter.ISO_LOCAL_TIME)}")
+        }
+
+        snackTime.value?.let {
+            scheduleMealTimeReminder(context, "Snack", it)
+            Log.d("MealTimeViewModel", "Snack time set and alarm scheduled for: ${it.format(DateTimeFormatter.ISO_LOCAL_TIME)}")
+        }
+
+        dinnerTime.value?.let {
+            scheduleMealTimeReminder(context, "Dinner", it)
+            Log.d("MealTimeViewModel", "Dinner time set and alarm scheduled for: ${it.format(DateTimeFormatter.ISO_LOCAL_TIME)}")
+        }
+    }
+
+    private fun scheduleMealTimeReminder(context: Context, mealName: String, time: LocalTime) {
+        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, MealReminderReceiver::class.java).apply {
+            putExtra("mealName", mealName)
+        }
+        val requestCode = mealName.hashCode()
+        val alarmIntent = PendingIntent.getBroadcast(context, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmMgr.canScheduleExactAlarms()) {
+                val permissionIntent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                permissionIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(permissionIntent)
+                return
+            }
+        }
+
+
+        val alarmTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, time.hour)
+            set(Calendar.MINUTE, time.minute)
+            set(Calendar.SECOND, 0)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmMgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, alarmIntent)
+        } else {
+            alarmMgr.setExact(AlarmManager.RTC_WAKEUP, alarmTime.timeInMillis, alarmIntent)
+        }
+    }
+
 }
+

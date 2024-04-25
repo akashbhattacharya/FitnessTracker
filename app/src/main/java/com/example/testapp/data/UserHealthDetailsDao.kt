@@ -13,6 +13,16 @@ interface UserHealthDetailsDao {
     suspend fun insert(details: UserHealthDetails)
     @Query("SELECT * from userHealthDetails WHERE id = 1")
     fun getDetailStream(): Flow<UserHealthDetails>
-    @Update
-    suspend fun update(details: UserHealthDetails)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFood(foods: FoodListDetails)
+    /*@Query("SELECT * from foodListDetails WHERE id = id")
+    fun getFoodStream(id:Int): Flow<FoodListDetails>*/
+    @Query("SELECT * from foodListDetails")
+    fun getAllFoodStream(): Flow<List<FoodListDetails>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSteps(steps: StepDetails)
+    @Query("SELECT * from stepDetails WHERE id = 1")
+    fun getStepStream(): Flow<StepDetails>
 }

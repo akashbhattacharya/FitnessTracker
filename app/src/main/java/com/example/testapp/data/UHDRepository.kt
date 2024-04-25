@@ -7,5 +7,14 @@ interface UHDRepository {
 
     fun getDetailStream(): Flow<UserHealthDetails>
 
-    suspend fun updateUHD(details: UserHealthDetails)
+    suspend fun insertFood(foods : FoodListDetails)
+
+    //fun getFoodStream(id:Int): Flow<FoodListDetails>
+
+    fun getAllFoodStream(): Flow<List<FoodListDetails>>
+
+    suspend fun insertSteps(steps: StepDetails)
+
+    fun getStepStream(): Flow<StepDetails>
+
 }

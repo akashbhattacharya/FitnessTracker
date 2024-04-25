@@ -15,9 +15,9 @@ import com.example.testapp.viewmodel.StepCounterViewModel
 @Composable
 fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, viewModel: StepCounterViewModel) {
     val steps = viewModel.steps.collectAsState().value
-    val calories = viewModel.calories.collectAsState().value
+    val calories = viewModel.totalCalories.collectAsState().value
     val goal = viewModel.moveGoal.collectAsState().value
-
+    val burnedCalories = viewModel.calories.collectAsState().value
     val progress = (calories.toFloat() / goal).coerceIn(0f, 1f)
     val goalText = "$steps / $goal"
     val distance = viewModel.calculateDistance(steps, 0.75)
@@ -38,26 +38,17 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
         )
         Spacer(modifier = Modifier.height(16.dp)) // Create space between progress bar and text
         Text(text = "Steps: $steps")
-        Text(text = "Calories: ${calories.toInt()} / $goal kcal")
+        Text(text = "Calories: ${calories-burnedCalories} / $goal kcal")
         Text(text = "Distance: ${String.format("%.2f", distance)} km") // Display distance
         // Text(text = "Goal: $goalText")
         androidx.compose.material3.Button(onClick = { viewModel.resetSteps() }) {
             Text("Reset Steps")
         }
         androidx.compose.material3.Button(
-            onClick = { navController.navigate("SleepTracker") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Text("Sleep Tracker")
-        }
-
-        androidx.compose.material3.Button(
             onClick = { navController.navigate("foodList")},
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp,0.dp,16.dp,0.dp)
+                .padding(16.dp, 0.dp, 16.dp, 0.dp)
         ){
             Text(text = "Today's Food list")
         }

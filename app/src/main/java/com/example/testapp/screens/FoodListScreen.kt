@@ -1,5 +1,7 @@
 package com.example.testapp.screens
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,6 +12,7 @@ import androidx.compose.material.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
@@ -19,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.FoodItem
 import com.example.testapp.viewmodel.StepCounterViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun FoodListScreen(viewModel: StepCounterViewModel, navController: NavController) {
@@ -30,7 +34,9 @@ fun FoodListScreen(viewModel: StepCounterViewModel, navController: NavController
             BottomBarContent(viewModel = viewModel)
         },
         content = { padding ->
-            Column(modifier = Modifier.padding(padding).imePadding()) {
+            Column(modifier = Modifier
+                .padding(padding)
+                .imePadding()) {
                 Text(
                     "Total Calories: $totalCalories",
                     style = MaterialTheme.typography.h6,
@@ -69,6 +75,7 @@ fun StepCounter(foodList: List<FoodItem>, modifier: Modifier = Modifier) {
 fun FoodEntryForm(viewModel: StepCounterViewModel) {
     var foodName by remember { mutableStateOf("") }
     var calories by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = Modifier
         .fillMaxWidth()
@@ -90,7 +97,11 @@ fun FoodEntryForm(viewModel: StepCounterViewModel) {
         )
         Button(
             onClick = {
-                viewModel.addFoodItem(foodName, calories.toIntOrNull() ?: 0)
+                val food = foodName // Capture the current value of foodName
+                val cal = calories // Capture the current value of calories
+                coroutineScope.launch {
+                    viewModel.addFoodItem(food, cal.toIntOrNull() ?: 0)
+                }
                 foodName = ""
                 calories = ""
             },

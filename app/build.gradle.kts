@@ -120,7 +120,7 @@ dependencies {
     implementation ("androidx.compose.material:material-icons-extended:1.1.0")
     implementation ("androidx.compose.runtime:runtime-livedata:<compose_version>")
 
-
+    implementation ("androidx.compose.runtime:runtime-livedata:<compose_version>")
 
 
 }

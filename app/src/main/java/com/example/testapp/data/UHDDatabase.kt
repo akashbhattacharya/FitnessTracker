@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [UserHealthDetails::class], version = 1, exportSchema = false)
+@Database(entities = [UserHealthDetails::class, FoodListDetails::class, StepDetails::class], version = 1, exportSchema = false)
 abstract class UHDDatabase : RoomDatabase() {
     abstract fun uhdDao(): UserHealthDetailsDao
 

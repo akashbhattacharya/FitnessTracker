@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -16,7 +17,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testapp.R
 import com.example.testapp.viewmodel.Achievement
-
 import com.example.testapp.viewmodel.StepCounterViewModel
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -27,7 +27,8 @@ fun AchievementsScreen(viewModel: StepCounterViewModel = viewModel()) {
             TopAppBar(title = { Text("Your Achievements") })
         }
     ) {
-        AchievementList(achievements = viewModel.userAchievement.achievements)
+        val achievements = viewModel.achievements.collectAsState().value.achievements
+        AchievementList(achievements = achievements)
     }
 }
 
@@ -72,7 +73,7 @@ fun AchievementCard(achievement: Achievement) {
                     style = MaterialTheme.typography.h6.copy(color = textColor)
                 )
                 Text(
-                    text = if (achievement.isAchieved) "Achieved on ${achievement.dateAchieved}" else "Not yet achieved",
+                    text = if (achievement.isAchieved) "Achieved" else "Not yet achieved",
                     style = MaterialTheme.typography.body1.copy(color = textColor)
                 )
             }

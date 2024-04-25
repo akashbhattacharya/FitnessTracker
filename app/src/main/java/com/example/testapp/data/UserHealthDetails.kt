@@ -10,4 +10,19 @@ data class UserHealthDetails(
       val height: Double,
       val sex: String
 )
-// @PrimaryKey(autoGenerate = true) val id: Int = 0,
+
+@Entity(tableName = "foodListDetails")
+data class FoodListDetails(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val name: String,
+    val calories: Int,
+    val timestamp: String
+)
+
+@Entity(tableName = "stepDetails")
+data class StepDetails(
+    @PrimaryKey val id: Int = 1,
+    val tempSteps: Int,
+    val totalSteps: Int
+)
+
