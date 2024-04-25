@@ -1,12 +1,18 @@
 package com.example.testapp.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.StepCounterViewModel
 import kotlinx.coroutines.launch
@@ -37,7 +43,12 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
         // Age selection
         Box(
-            modifier = Modifier.fillMaxWidth().clickable { isAgeDropdownExpanded = true }
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isAgeDropdownExpanded = true }
+                .border(
+                    border = BorderStroke(width = 1.dp, color = Color.Gray),
+                    shape = MaterialTheme.shapes.small)
         ) {
             Text(
                 text = selectedAge ?: "Select Age",
@@ -62,7 +73,12 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
         // Height selection with unit conversion
         Box(
-            modifier = Modifier.fillMaxWidth().clickable { isHeightDropdownExpanded = true }
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isHeightDropdownExpanded = true }
+                .border(
+                    border = BorderStroke(width = 1.dp, color = Color.Gray),
+                    shape = MaterialTheme.shapes.small)
         ) {
             Text(
                 text = buildHeightString(selectedHeight, heightUnit),
@@ -88,7 +104,12 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
         // Weight selection with unit conversion
         Row {
             Box(
-                modifier = Modifier.fillMaxWidth(0.5f).clickable { isWeightDropdownExpanded = true }
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .clickable { isWeightDropdownExpanded = true }
+                    .border(
+                        border = BorderStroke(width = 1.dp, color = Color.Gray),
+                        shape = MaterialTheme.shapes.small)
             ) {
                 Text(
                     text = buildWeightString(selectedWeight, weightUnit),
@@ -112,15 +133,13 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
             Spacer(modifier = Modifier.width(16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(0.5f),
-                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Checkbox(
                     checked = weightUnit == "kg",
-                    onCheckedChange = {
-                        weightUnit = if (it) "kg" else "lbs"
-                    },
+                    onCheckedChange = { weightUnit = if (it) "kg" else "lbs" },
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text("kg")
@@ -129,9 +148,7 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
                 Checkbox(
                     checked = weightUnit == "lbs",
-                    onCheckedChange = {
-                        weightUnit = if (it) "lbs" else "kg"
-                    },
+                    onCheckedChange = { weightUnit = if (it) "lbs" else "kg" },
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text("lbs")
@@ -142,7 +159,13 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
         // Sex selection
         Box(
-            modifier = Modifier.fillMaxWidth().clickable { isSexDropdownExpanded = true }
+
+        modifier = Modifier
+            .border(
+            border = BorderStroke(width = 1.dp, color = Color.Gray),
+            shape = MaterialTheme.shapes.small)
+            .fillMaxWidth()
+            .clickable { isSexDropdownExpanded = true }
         ) {
             Text(
                 text = selectedSex ?: "Select Sex",
@@ -182,16 +205,15 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
                     )
                 }
                 navController.navigateUp()
-            }) {
-                Text("Save")
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Button(
-                onClick = { viewModel.toggleDarkMode() }
-            ) {
-                Text(if (viewModel.isDarkModeEnabled.value) "Disable Dark Mode" else "Enable Dark Mode")
+            },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(50),
+                colors = androidx.compose.material.ButtonDefaults.buttonColors(Color(0xfff9aa33))
+                ) {
+                Text("Save", fontSize = 20.sp)
             }
         }
     }

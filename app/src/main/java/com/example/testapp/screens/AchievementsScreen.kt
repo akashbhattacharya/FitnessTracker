@@ -25,7 +25,7 @@ fun AchievementsScreen(viewModel: StepCounterViewModel = viewModel()) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Your Achievements") },
-                backgroundColor = Color(0xff00abb8)
+                backgroundColor = Color(0xfff9aa33)
             )
         }
     ) {
