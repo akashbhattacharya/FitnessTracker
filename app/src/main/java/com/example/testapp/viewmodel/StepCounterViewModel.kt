@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -158,7 +159,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
                         _steps.value = stepDetails.tempSteps
                         _total_steps.value = stepDetails.totalSteps
                     }
-
+                    else{
+                        uhdRepository.insertSteps(StepDetails(1,0,0))
+                    }
             }
         }
     }
@@ -244,15 +247,14 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         if (accelerationMagnitude > stepThreshold && currentTime - lastStepTime > 500) { // Debounce time of 500ms
             viewModelScope.launch {
                 _steps.value += 1
-                uhdRepository.getStepStream().collect(){stepDetails->
-                    if(stepDetails!=null) {
-                        var details =
-                            StepDetails(1, stepDetails.tempSteps + 1, stepDetails.totalSteps + 1)
-                        uhdRepository.insertSteps(details)
-                    }
-                }
                 _calories.value = calculateCalories(_steps.value)
                 sendStepMilestoneNotification(_steps.value)
+            }
+            var details : StepDetails
+            viewModelScope.launch {
+                var stepDetails = uhdRepository.getStepStream().first()
+                details = StepDetails(1, stepDetails.tempSteps + 1, stepDetails.totalSteps + 1)
+                uhdRepository.insertSteps(details)
             }
             lastStepTime = currentTime
         }
