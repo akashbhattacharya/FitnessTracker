@@ -1,5 +1,6 @@
 package com.example.testapp
 
+import SetMealTimingsScreen
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -44,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -136,16 +138,18 @@ class MainActivity : ComponentActivity() {
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Calorie & Step Tracking") },
+                    title = { Text("Flex Force", fontWeight= FontWeight.Bold, fontSize = 20.sp, color = Color.White) },
                     navigationIcon = {
                         IconButton(onClick = {
                             coroutineScope.launch {
                                 scaffoldState.drawerState.open() // Call open() inside a coroutine
                             }
                         }) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            Icon(Icons.Filled.Menu, contentDescription = "Menu",tint = Color.White )
                         }
-                    }
+                    },
+                    modifier = Modifier.height(60.dp),
+                    backgroundColor = Color(0xff344955)
                 )
             }
         ) {paddingValues ->
@@ -238,9 +242,9 @@ class MainActivity : ComponentActivity() {
                 }
                 .padding(10.dp)
         ) {
-            Icon(icon, contentDescription = label, modifier = Modifier.size(36.dp))
+            Icon(icon, contentDescription = label, modifier = Modifier.size(36.dp),if(isActive)Color(0xfff9aa33) else Color(0xff344955))
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = label, fontSize = 20.sp,color =if (isActive) Color.Black else Color.Gray, fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium)
+            Text(text = label, fontSize = 20.sp,color =if (isActive) Color(0xfff9aa33) else Color(0xff344955), fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium)
         }
     }
 

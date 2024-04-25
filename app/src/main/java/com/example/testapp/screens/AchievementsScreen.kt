@@ -24,7 +24,9 @@ import com.example.testapp.viewmodel.StepCounterViewModel
 fun AchievementsScreen(viewModel: StepCounterViewModel = viewModel()) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Your Achievements") })
+            TopAppBar(title = { Text("Your Achievements") },
+                backgroundColor = Color(0xff00abb8)
+            )
         }
     ) {
         val achievements = viewModel.achievements.collectAsState().value.achievements

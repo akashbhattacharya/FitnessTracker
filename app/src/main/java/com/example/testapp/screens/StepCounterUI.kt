@@ -1,12 +1,15 @@
 package com.example.testapp.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.StepCounterViewModel
@@ -41,19 +44,53 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
         Text(text = "Calories: ${calories-burnedCalories} / $goal kcal")
         Text(text = "Distance: ${String.format("%.2f", distance)} km") // Display distance
         // Text(text = "Goal: $goalText")
-        androidx.compose.material3.Button(onClick = { viewModel.resetSteps() }) {
-            Text("Reset Steps")
-        }
-        androidx.compose.material3.Button(
-            onClick = { navController.navigate("foodList")},
+        Column(
             modifier = Modifier
-                .padding(16.dp, 0.dp, 16.dp, 0.dp)
-        ){
-            Text(text = "Today's Food List")
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Button(
+                onClick = { viewModel.resetSteps() },
+                colors = ButtonDefaults.buttonColors( Color(0xfff9aa33)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text("Reset Steps", fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { navController.navigate("foodList") },
+                colors = ButtonDefaults.buttonColors(Color(0xfff9aa33)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text("Today's Food List", fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { viewModel.resetMeals() },
+                colors = ButtonDefaults.buttonColors(Color(0xfff9aa33)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .padding(8.dp),
+                shape = RoundedCornerShape(50)
+            ) {
+                Text("Reset Food List", fontSize = 20.sp)
+            }
         }
-        androidx.compose.material3.Button(onClick = { viewModel.resetMeals() }) {
-            Text("Reset Food List")
-        }
+
 
         // Show congratulations message if goal reached
         if (progress >= 1.0f) {
