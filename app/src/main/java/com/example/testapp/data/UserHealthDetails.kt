@@ -1,6 +1,7 @@
 package com.example.testapp.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.time.LocalTime
 
 @Entity(tableName = "userHealthDetails")
 data class UserHealthDetails(

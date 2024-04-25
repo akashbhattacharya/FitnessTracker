@@ -9,12 +9,13 @@ interface UHDRepository {
 
     suspend fun insertFood(foods : FoodListDetails)
 
-    //fun getFoodStream(id:Int): Flow<FoodListDetails>
+    suspend fun deleteAllMeals()
 
     fun getAllFoodStream(): Flow<List<FoodListDetails>>
 
     suspend fun insertSteps(steps: StepDetails)
 
     fun getStepStream(): Flow<StepDetails>
+
 
 }

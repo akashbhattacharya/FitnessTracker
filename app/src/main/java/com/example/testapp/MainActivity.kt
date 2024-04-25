@@ -136,7 +136,7 @@ class MainActivity : ComponentActivity() {
             },
             topBar = {
                 TopAppBar(
-                    title = { Text("Step Counter") },
+                    title = { Text("Calorie & Step Tracking") },
                     navigationIcon = {
                         IconButton(onClick = {
                             coroutineScope.launch {
@@ -153,7 +153,6 @@ class MainActivity : ComponentActivity() {
                 composable("main") {
                     StepCounterUI(navController, paddingValues, viewModel)
                 }
-                composable("weeklySteps") { WeeklyStepsScreen() }
                 composable("healthDetails") { HealthDetailsScreen(navController, viewModel) }
                 composable("setMealTimings") { SetMealTimingsScreen(navController) }
                 composable("achievementScreen") { AchievementsScreen(viewModel) }

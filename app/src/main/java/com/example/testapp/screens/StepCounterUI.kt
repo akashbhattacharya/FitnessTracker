@@ -47,10 +47,12 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
         androidx.compose.material3.Button(
             onClick = { navController.navigate("foodList")},
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(16.dp, 0.dp, 16.dp, 0.dp)
         ){
-            Text(text = "Today's Food list")
+            Text(text = "Today's Food List")
+        }
+        androidx.compose.material3.Button(onClick = { viewModel.resetMeals() }) {
+            Text("Reset Food List")
         }
 
         // Show congratulations message if goal reached

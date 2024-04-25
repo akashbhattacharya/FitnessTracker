@@ -16,13 +16,15 @@ interface UserHealthDetailsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFood(foods: FoodListDetails)
-    /*@Query("SELECT * from foodListDetails WHERE id = id")
-    fun getFoodStream(id:Int): Flow<FoodListDetails>*/
+
     @Query("SELECT * from foodListDetails")
     fun getAllFoodStream(): Flow<List<FoodListDetails>>
+    @Query("DELETE FROM foodListDetails")
+    suspend fun deleteAllMeals()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSteps(steps: StepDetails)
     @Query("SELECT * from stepDetails WHERE id = 1")
     fun getStepStream(): Flow<StepDetails>
+
 }

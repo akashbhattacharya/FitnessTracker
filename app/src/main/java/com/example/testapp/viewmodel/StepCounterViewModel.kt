@@ -372,6 +372,13 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         }
 
     }
+
+    fun resetMeals(){
+        _foodList.value = emptyList()
+        viewModelScope.launch {
+            uhdRepository.deleteAllMeals()
+        }
+    }
     private fun calculateCalories(steps: Int): Double {
         return steps * 0.04 // Simplified calorie calculation. Adjust based on actual use case.
     }
