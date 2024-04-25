@@ -132,7 +132,8 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
                         userHealthDetails.age,
                         userHealthDetails.weight,
                         userHealthDetails.height,
-                        userHealthDetails.sex
+                        userHealthDetails.sex,
+                        userHealthDetails.bmr
                     )
                     _moveGoal.value = calculateBMR(healthDetails!!).toInt()
                 }
@@ -333,10 +334,11 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     suspend fun setHealthDetails(height: Double, weight: Double, age: Int, sex: String) {
         healthDetails = HealthDetails(age, weight, height, sex)
-        uhdRepository.insertUHD(UserHealthDetails(1,age, weight, height, sex))
 
         // Calculate BMR based on user details
         val bmr = calculateBMR(healthDetails!!)
+        uhdRepository.insertUHD(UserHealthDetails(1,age, weight, height, sex,bmr))
+
         // Set default move goal based on BMR
         setDefaultMoveGoal(bmr)
     }
@@ -350,11 +352,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private fun setDefaultMoveGoal(bmr: Double) {
-        // Default move goal can be set based on a percentage of BMR
-        // You can adjust the percentage based on your application requirements
-        val percentageOfBMR = 0.2 // For example, set move goal to 20% of BMR
-        val defaultMoveGoal = (percentageOfBMR * bmr).toInt()
-        _moveGoal.value = defaultMoveGoal
+        _moveGoal.value = bmr.toInt()
     }
 
     fun calculateDistance(steps: Int, strideLength: Double): Double {
@@ -372,18 +370,8 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
                 }
             }
         }
-    }
 
-    fun increaseMoveGoal() {
-        _moveGoal.value += 10
     }
-
-    fun decreaseMoveGoal() {
-        if (_moveGoal.value > 10) { // Prevent negative goals
-            _moveGoal.value -= 10
-        }
-    }
-
     private fun calculateCalories(steps: Int): Double {
         return steps * 0.04 // Simplified calorie calculation. Adjust based on actual use case.
     }

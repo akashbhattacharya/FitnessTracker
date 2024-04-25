@@ -158,7 +158,6 @@ class MainActivity : ComponentActivity() {
                 composable("setMealTimings") { SetMealTimingsScreen(navController) }
                 composable("achievementScreen") { AchievementsScreen(viewModel) }
                 composable("foodList") { FoodListScreen(viewModel, navController) }
-                composable("changeMoveGoal") { ChangeMoveGoalScreen(navController, viewModel) }
             }
         }
     }
@@ -198,7 +197,6 @@ class MainActivity : ComponentActivity() {
                 DrawerItemData("Health Details", Icons.Filled.MonitorHeart, "healthDetails"),
                 DrawerItemData("Meal Timings", Icons.Filled.Fastfood, "setMealTimings"),
                 DrawerItemData("My Achievements", Icons.Filled.MilitaryTech, "achievementScreen"),
-                DrawerItemData("My Move Goals", Icons.Filled.DirectionsWalk, "changeMoveGoal")
             )
 
             drawerItems.forEach { item ->
