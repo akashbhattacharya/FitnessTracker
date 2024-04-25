@@ -97,8 +97,10 @@ fun FoodEntryForm(viewModel: StepCounterViewModel) {
         )
         Button(
             onClick = {
-                val food = foodName // Capture the current value of foodName
-                val cal = calories // Capture the current value of calories
+                var food = foodName // Capture the current value of foodName
+                var cal = calories // Capture the current value of calories
+                if(cal == "") cal = "0"
+                if(food == "") food = "Zero Calorie Meal"
                 coroutineScope.launch {
                     viewModel.addFoodItem(food, cal.toIntOrNull() ?: 0)
                 }
