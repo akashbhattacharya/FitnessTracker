@@ -107,9 +107,9 @@ fun getImageResource(rank: String, isAchieved: Boolean): Int {
 }
 
 fun mapMilestoneToRank(milestone: Int): String = when(milestone) {
-    5000 -> "Bronze"
-    10000 -> "Silver"
-    25000 -> "Gold"
+    5 -> "Bronze"
+    10 -> "Silver"
+    25 -> "Gold"
     50000 -> "Platinum"
     100000 -> "Diamond"
     else -> "Unknown Rank"

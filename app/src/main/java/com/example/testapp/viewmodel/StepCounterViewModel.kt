@@ -25,6 +25,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.testapp.CalorieApplication
 import com.example.testapp.MealReminderReceiver
+import com.example.testapp.R
 import com.example.testapp.data.FoodListDetails
 import com.example.testapp.data.HealthDetails
 import com.example.testapp.data.StepDetails
@@ -110,9 +111,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private val AGE_CONSTANT = 6.755
 
     private var _achievements = MutableStateFlow(UserAchievement("user123", listOf(
-        Achievement(5000, false),
-        Achievement(10000, false),
-        Achievement(25000, false),
+        Achievement(5, false),
+        Achievement(10, false),
+        Achievement(25, false),
         Achievement(50000, false),
         Achievement(100000, false)
     )))
@@ -187,6 +188,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private fun updateAchievements(newSteps: Int) {
         val currentAchievements = _achievements.value.achievements.map { achievement ->
             if (!achievement.isAchieved && newSteps >= achievement.milestone) {
+                showNotification(achievement.milestone)  // Trigger notification
                 achievement.copy(isAchieved = true)
             } else {
                 achievement
@@ -194,6 +196,25 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         }
         _achievements.value = UserAchievement(_achievements.value.userId, currentAchievements)
     }
+
+    private fun showNotification(milestone: Int) {
+        // Obtain the application context from the AndroidViewModel
+        val context = getApplication<Application>().applicationContext
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val builder = NotificationCompat.Builder(context, "ACHIEVEMENT_CHANNEL_ID").apply {
+            setSmallIcon(R.drawable.norank) // Set the icon of the notification
+            setContentTitle("Achievement Unlocked")
+            setContentText("Congratulations! You've reached $milestone steps!")
+            priority = NotificationCompat.PRIORITY_DEFAULT
+            setAutoCancel(true)
+        }
+
+        // Notification ID is unique to each notification you create.
+        notificationManager.notify(milestone, builder.build())
+    }
+
+
 
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {

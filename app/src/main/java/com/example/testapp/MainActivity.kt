@@ -114,13 +114,20 @@ class MainActivity : ComponentActivity() {
                     "meal_reminder_channel",
                     "Meal Reminder Notifications",
                     NotificationManager.IMPORTANCE_HIGH
-                ).apply { description = "Notifications for meal reminders" }
+                ).apply { description = "Notifications for meal reminders" },
+                // Adding the new achievement notification channel
+                NotificationChannel(
+                    "achievement_channel",
+                    "Achievement Notifications",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply { description = "Notifications for achievements unlocked" }
             )
             val notificationManager: NotificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannels(channels)
         }
     }
+
 
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @Composable
