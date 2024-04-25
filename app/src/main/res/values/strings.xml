@@ -2,4 +2,5 @@
     <string name="app_name">TestApp</string>
     <string name="channel_name">Your Channel Name</string>
     <string name="channel_description">Your Channel Description</string>
+    <string name="Flex_Force">Flex Force</string>
 </resources>
