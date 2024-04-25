@@ -44,7 +44,7 @@ fun SetMealTimingsScreen(navController: NavController, mealTimeViewModel: StepCo
                     }
 
                 },
-                backgroundColor = Color(0xff4a6572)
+                    backgroundColor = Color(0xff4a6572)
                 )
         }
     ) { innerPadding ->
@@ -68,7 +68,7 @@ fun SetMealTimingsScreen(navController: NavController, mealTimeViewModel: StepCo
                     .height(70.dp)
                     .padding(0.dp,8.dp),
                 shape = RoundedCornerShape(24),
-                colors = androidx.compose.material.ButtonDefaults.buttonColors(Color(0xfff9aa33))
+                colors = ButtonDefaults.buttonColors(Color(0xfff9aa33))
             ) {
                 Text("Save Meal Times", color = Color.Black, fontSize = 20.sp)
             }
