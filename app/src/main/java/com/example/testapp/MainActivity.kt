@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -119,7 +120,7 @@ class MainActivity : ComponentActivity() {
                 NotificationChannel(
                     "achievement_channel",
                     "Achievement Notifications",
-                    NotificationManager.IMPORTANCE_HIGH
+                    NotificationManager.IMPORTANCE_DEFAULT
                 ).apply { description = "Notifications for achievements unlocked" }
             )
             val notificationManager: NotificationManager =
@@ -134,7 +135,8 @@ class MainActivity : ComponentActivity() {
     fun AppNavigation() {
         val scaffoldState = rememberScaffoldState()
         val navController = rememberNavController()
-        val viewModel: StepCounterViewModel = viewModel()
+        val viewModel: StepCounterViewModel by viewModels()
+
 
         val coroutineScope = rememberCoroutineScope() // Remember a CoroutineScope for coroutine launch
 
@@ -165,7 +167,7 @@ class MainActivity : ComponentActivity() {
                     StepCounterUI(navController, paddingValues, viewModel)
                 }
                 composable("healthDetails") { HealthDetailsScreen(navController, viewModel) }
-                composable("setMealTimings") { SetMealTimingsScreen(navController) }
+                composable("setMealTimings") { SetMealTimingsScreen(navController, viewModel) }
                 composable("achievementScreen") { AchievementsScreen(viewModel) }
                 composable("foodList") { FoodListScreen(viewModel, navController) }
             }
@@ -206,7 +208,9 @@ class MainActivity : ComponentActivity() {
                 DrawerItemData("Home", Icons.Filled.Home, "main"),
                 DrawerItemData("Health Details", Icons.Filled.MonitorHeart, "healthDetails"),
                 DrawerItemData("Meal Timings", Icons.Filled.Fastfood, "setMealTimings"),
+                DrawerItemData("Food List", Icons.Filled.SetMeal, "foodList"),
                 DrawerItemData("My Achievements", Icons.Filled.MilitaryTech, "achievementScreen"),
+
             )
 
             drawerItems.forEach { item ->

@@ -7,18 +7,25 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.testapp.viewmodel.FoodItem
 import com.example.testapp.viewmodel.StepCounterViewModel
@@ -30,6 +37,14 @@ fun FoodListScreen(viewModel: StepCounterViewModel, navController: NavController
     val totalCalories by viewModel.totalCalories.collectAsState()
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                        CalorieDisplay(totalCalories = totalCalories)
+                },
+                backgroundColor = Color(0xff4a6572)
+            )
+        },
         bottomBar = {
             BottomBarContent(viewModel = viewModel)
         },
@@ -37,17 +52,31 @@ fun FoodListScreen(viewModel: StepCounterViewModel, navController: NavController
             Column(modifier = Modifier
                 .padding(padding)
                 .imePadding()) {
-                Text(
-                    "Total Calories: $totalCalories",
-                    style = MaterialTheme.typography.h6,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    textAlign = TextAlign.Center
-                )
+               //CalorieDisplay(totalCalories = totalCalories)
                 StepCounter(foodList = foodList)
             }
         }
+    )
+}
+
+@Composable
+fun CalorieDisplay(totalCalories: Int) {
+    val calorieText = buildAnnotatedString {
+        withStyle(style = SpanStyle(color = Color.White)) {
+            append("Total Calories: ")
+        }
+        withStyle(style = SpanStyle(color = Color(0xffdb8504))) {
+            append("$totalCalories")
+        }
+    }
+
+    Text(
+        text = calorieText,
+        style = MaterialTheme.typography.h6,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        textAlign = TextAlign.Center
     )
 }
 
@@ -73,59 +102,112 @@ fun StepCounter(foodList: List<FoodItem>, modifier: Modifier = Modifier) {
 
 @Composable
 fun FoodEntryForm(viewModel: StepCounterViewModel) {
-    var foodName by remember { mutableStateOf("") }
-    var calories by remember { mutableStateOf("") }
+    var foodName by rememberSaveable { mutableStateOf("") }
+    var calories by rememberSaveable { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-        .imePadding()) {
-        TextField(
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .imePadding()
+    ) {
+        TextField_Custom(
             value = foodName,
             onValueChange = { foodName = it },
-            label = { Text("Food Name") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            modifier = Modifier.fillMaxWidth()
+            label = "Food Name",
+            imeAction = ImeAction.Next
         )
-        TextField(
+        TextField_Custom(
             value = calories,
             onValueChange = { calories = it },
-            label = { Text("Calories") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number,imeAction = ImeAction.Done ),
-            modifier = Modifier.fillMaxWidth()
+            label = "Calories",
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
         )
         Button(
             onClick = {
-                var food = foodName // Capture the current value of foodName
-                var cal = calories // Capture the current value of calories
-                if(cal == "") cal = "0"
-                if(food == "") food = "Zero Calorie Meal"
+                var food = foodName.ifBlank { "Zero Calorie Meal" }
+                var cal = calories.ifBlank { "0" }
                 coroutineScope.launch {
-                    viewModel.addFoodItem(food, cal.toIntOrNull() ?: 0)
+                    viewModel.addFoodItem(food, cal.toInt())
                 }
                 foodName = ""
                 calories = ""
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(70.dp)  // Adjusted height for aesthetic balance
+                .padding(vertical = 8.dp),  // Provides vertical padding
+            shape = RoundedCornerShape(24),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xff344955))
         ) {
-            Text("Add Food")
+            Text("Add Food", fontSize = 18.sp, color = Color.White)  // Adjusted font size for better readability
         }
     }
 }
-
 @Composable
-fun FoodItemView(foodItem: FoodItem) {
-    Row(
+fun TextField_Custom(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(vertical = 8.dp),  // Added padding for spacing between TextFields
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = Color.Black,
+            backgroundColor = Color(0xffeab676),
+            focusedLabelColor = Color.Black,
+            unfocusedLabelColor = Color.DarkGray,
+            focusedIndicatorColor = Color.Transparent,  // Hides the underline when focused
+            unfocusedIndicatorColor = Color.Transparent  // Hides the underline when unfocused
+        ),
+        shape = RoundedCornerShape(12.dp),  // Increased rounding for softer edges
+        singleLine = true
+    )
+}
+@Composable
+fun FoodItemView(foodItem: FoodItem) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        elevation = 2.dp,
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Column {
-            Text(foodItem.name, style = MaterialTheme.typography.h6)
-            Text("${foodItem.calories} cal", style = MaterialTheme.typography.body2)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFF0F0F0))
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    text = foodItem.name,
+                    style = MaterialTheme.typography.h6.copy(color = Color(0xff262626)),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${foodItem.calories} cal",
+                    style = MaterialTheme.typography.body2.copy(color = Color.DarkGray)
+                )
+            }
+            Text(
+                text = "Added on: ${foodItem.timestamp}",
+                style = MaterialTheme.typography.caption.copy(color = Color.Gray),
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
         }
-        Text("Added on: ${foodItem.timestamp}", style = MaterialTheme.typography.caption)
     }
 }

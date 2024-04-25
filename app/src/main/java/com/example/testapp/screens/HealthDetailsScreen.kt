@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -36,187 +37,202 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
     val heightOptions = (30..275).map { it.toString() }
     val weightOptions = (1..454).map { it.toString() }
     val sexOptions = listOf("Male", "Female")
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Health Details", style = MaterialTheme.typography.h5)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Age selection
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { isAgeDropdownExpanded = true }
-                .border(
-                    border = BorderStroke(width = 1.dp, color = Color.Gray),
-                    shape = MaterialTheme.shapes.small)
-        ) {
-            Text(
-                text = selectedAge ?: "Select Age",
-                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Set Health Details",
+                        color = Color.White,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                },
+                backgroundColor = Color(0xff4a6572)
             )
-            DropdownMenu(
-                expanded = isAgeDropdownExpanded,
-                onDismissRequest = { isAgeDropdownExpanded = false }
-            ) {
-                ageOptions.forEach { age ->
-                    DropdownMenuItem(onClick = {
-                        selectedAge = age
-                        isAgeDropdownExpanded = false
-                    }) {
-                        Text(age)
-                    }
-                }
-            }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Height selection with unit conversion
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { isHeightDropdownExpanded = true }
-                .border(
-                    border = BorderStroke(width = 1.dp, color = Color.Gray),
-                    shape = MaterialTheme.shapes.small)
-        ) {
-            Text(
-                text = buildHeightString(selectedHeight, heightUnit),
-                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-            )
-            DropdownMenu(
-                expanded = isHeightDropdownExpanded,
-                onDismissRequest = { isHeightDropdownExpanded = false }
-            ) {
-                heightOptions.forEach { height ->
-                    DropdownMenuItem(onClick = {
-                        selectedHeight = height
-                        isHeightDropdownExpanded = false
-                    }) {
-                        Text(height)
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Weight selection with unit conversion
-        Row {
+    ) { innerPadding ->
+        Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
+            Text("Health Details", style = MaterialTheme.typography.h5)
+            Spacer(modifier = Modifier.height(16.dp))
+            // Age selection
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.5f)
-                    .clickable { isWeightDropdownExpanded = true }
+                    .fillMaxWidth()
+                    .clickable { isAgeDropdownExpanded = true }
                     .border(
                         border = BorderStroke(width = 1.dp, color = Color.Gray),
                         shape = MaterialTheme.shapes.small)
             ) {
                 Text(
-                    text = buildWeightString(selectedWeight, weightUnit),
+                    text = selectedAge ?: "Select Age",
                     modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                 )
                 DropdownMenu(
-                    expanded = isWeightDropdownExpanded,
-                    onDismissRequest = { isWeightDropdownExpanded = false }
+                    expanded = isAgeDropdownExpanded,
+                    onDismissRequest = { isAgeDropdownExpanded = false }
                 ) {
-                    weightOptions.forEach { weight ->
+                    ageOptions.forEach { age ->
                         DropdownMenuItem(onClick = {
-                            selectedWeight = weight
-                            isWeightDropdownExpanded = false
+                            selectedAge = age
+                            isAgeDropdownExpanded = false
                         }) {
-                            Text(weight)
+                            Text(age)
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Height selection with unit conversion
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isHeightDropdownExpanded = true }
+                    .border(
+                        border = BorderStroke(width = 1.dp, color = Color.Gray),
+                        shape = MaterialTheme.shapes.small)
             ) {
-                Checkbox(
-                    checked = weightUnit == "kg",
-                    onCheckedChange = { weightUnit = if (it) "kg" else "lbs" },
-                    modifier = Modifier.padding(end = 8.dp)
+                Text(
+                    text = buildHeightString(selectedHeight, heightUnit),
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
                 )
-                Text("kg")
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                Checkbox(
-                    checked = weightUnit == "lbs",
-                    onCheckedChange = { weightUnit = if (it) "lbs" else "kg" },
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text("lbs")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sex selection
-        Box(
-
-        modifier = Modifier
-            .border(
-            border = BorderStroke(width = 1.dp, color = Color.Gray),
-            shape = MaterialTheme.shapes.small)
-            .fillMaxWidth()
-            .clickable { isSexDropdownExpanded = true }
-        ) {
-            Text(
-                text = selectedSex ?: "Select Sex",
-                modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
-            )
-            DropdownMenu(
-                expanded = isSexDropdownExpanded,
-                onDismissRequest = { isSexDropdownExpanded = false }
-            ) {
-                sexOptions.forEach { sex ->
-                    DropdownMenuItem(onClick = {
-                        selectedSex = sex
-                        isSexDropdownExpanded = false
-                    }) {
-                        Text(sex)
+                DropdownMenu(
+                    expanded = isHeightDropdownExpanded,
+                    onDismissRequest = { isHeightDropdownExpanded = false }
+                ) {
+                    heightOptions.forEach { height ->
+                        DropdownMenuItem(onClick = {
+                            selectedHeight = height
+                            isHeightDropdownExpanded = false
+                        }) {
+                            Text(height)
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            Button(onClick = {
-                val age = selectedAge?.toIntOrNull() ?: 0
-                val height = selectedHeight?.toDoubleOrNull() ?: 0.0
-                val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
-                coroutineScope.launch {
-                    viewModel.setHealthDetails(
-                        height,
-                        weight,
-                        age,
-                        selectedSex ?: ""
-                    )
-                }
-                navController.navigateUp()
-            },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .padding(8.dp),
-                shape = RoundedCornerShape(50),
-                colors = androidx.compose.material.ButtonDefaults.buttonColors(Color(0xfff9aa33))
+            // Weight selection with unit conversion
+            Row {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.5f)
+                        .clickable { isWeightDropdownExpanded = true }
+                        .border(
+                            border = BorderStroke(width = 1.dp, color = Color.Gray),
+                            shape = MaterialTheme.shapes.small)
                 ) {
-                Text("Save", fontSize = 20.sp)
+                    Text(
+                        text = buildWeightString(selectedWeight, weightUnit),
+                        modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+                    )
+                    DropdownMenu(
+                        expanded = isWeightDropdownExpanded,
+                        onDismissRequest = { isWeightDropdownExpanded = false }
+                    ) {
+                        weightOptions.forEach { weight ->
+                            DropdownMenuItem(onClick = {
+                                selectedWeight = weight
+                                isWeightDropdownExpanded = false
+                            }) {
+                                Text(weight)
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = weightUnit == "kg",
+                        onCheckedChange = { weightUnit = if (it) "kg" else "lbs" },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text("kg")
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Checkbox(
+                        checked = weightUnit == "lbs",
+                        onCheckedChange = { weightUnit = if (it) "lbs" else "kg" },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text("lbs")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Sex selection
+            Box(
+
+                modifier = Modifier
+                    .border(
+                        border = BorderStroke(width = 1.dp, color = Color.Gray),
+                        shape = MaterialTheme.shapes.small)
+                    .fillMaxWidth()
+                    .clickable { isSexDropdownExpanded = true }
+            ) {
+                Text(
+                    text = selectedSex ?: "Select Sex",
+                    modifier = Modifier.padding(vertical = 12.dp, horizontal = 16.dp)
+                )
+                DropdownMenu(
+                    expanded = isSexDropdownExpanded,
+                    onDismissRequest = { isSexDropdownExpanded = false }
+                ) {
+                    sexOptions.forEach { sex ->
+                        DropdownMenuItem(onClick = {
+                            selectedSex = sex
+                            isSexDropdownExpanded = false
+                        }) {
+                            Text(sex)
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Button(onClick = {
+                    val age = selectedAge?.toIntOrNull() ?: 0
+                    val height = selectedHeight?.toDoubleOrNull() ?: 0.0
+                    val weight = selectedWeight?.toDoubleOrNull() ?: 0.0
+                    coroutineScope.launch {
+                        viewModel.setHealthDetails(
+                            height,
+                            weight,
+                            age,
+                            selectedSex ?: ""
+                        )
+                    }
+                    navController.navigateUp()
+                },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(70.dp)
+                        .padding(0.dp,8.dp),
+                    shape = RoundedCornerShape(24),
+                    colors = androidx.compose.material.ButtonDefaults.buttonColors(Color(0xfff9aa33))
+                ) {
+                    Text("Save", fontSize = 20.sp)
+                }
             }
         }
     }
+
 }
 
 private fun buildWeightString(weight: String?, unit: String): String {

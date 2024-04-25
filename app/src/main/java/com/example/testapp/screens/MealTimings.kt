@@ -13,14 +13,14 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.ui.platform.LocalContext
 import android.app.TimePickerDialog
 import android.content.Context
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun SetMealTimingsScreen(navController: NavController) {
-    val mealTimeViewModel: StepCounterViewModel = viewModel()
+fun SetMealTimingsScreen(navController: NavController, mealTimeViewModel: StepCounterViewModel){
     val context = LocalContext.current
 
     val breakfastTime by mealTimeViewModel.breakfastTime.observeAsState()
@@ -31,12 +31,24 @@ fun SetMealTimingsScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Set Meal Timings") },
-                backgroundColor = MaterialTheme.colors.primarySurface,
-                contentColor = Color.White
-            )
+                title = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize(), // Fill the space of the AppBar
+                        contentAlignment = Alignment.Center // Align content to the center
+                    ) {
+                        Text(
+                            text = "Set Meal Timings",
+                            color = Color.White // Apply typography style
+                        )
+                    }
+
+                },
+                backgroundColor = Color(0xff4a6572)
+                )
         }
     ) { innerPadding ->
+
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -44,6 +56,7 @@ fun SetMealTimingsScreen(navController: NavController) {
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            Spacer(Modifier.width(8.dp))
             MealTimeSettingButton("Breakfast", breakfastTime, { newTime -> mealTimeViewModel.breakfastTime.value = newTime }, context)
             MealTimeSettingButton("Lunch", lunchTime, { newTime -> mealTimeViewModel.lunchTime.value = newTime }, context)
             MealTimeSettingButton("Snack", snackTime, { newTime -> mealTimeViewModel.snackTime.value = newTime }, context)
@@ -52,10 +65,12 @@ fun SetMealTimingsScreen(navController: NavController) {
                 onClick = { mealTimeViewModel.saveMealTimes(context) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.primary)
+                    .height(70.dp)
+                    .padding(0.dp,8.dp),
+                shape = RoundedCornerShape(24),
+                colors = androidx.compose.material.ButtonDefaults.buttonColors(Color(0xfff9aa33))
             ) {
-                Text("Save Meal Times", color = Color.White, fontSize = 16.sp)
+                Text("Save Meal Times", color = Color.Black, fontSize = 20.sp)
             }
         }
     }
@@ -73,12 +88,15 @@ fun MealTimeSettingButton(
         onClick = {
             showTimePicker(time, setTime, context)
         },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp)
+        ,
         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.surface)
     ) {
         Icon(Icons.Filled.Schedule, contentDescription = "Set Time", tint = MaterialTheme.colors.onPrimary)
         Spacer(Modifier.width(8.dp))
-        Text("$mealName Time: $timeString", modifier = Modifier.weight(1f))
+        Text("$mealName Time: $timeString", modifier = Modifier.weight(1f), fontSize = 18.sp)
     }
 }
 

@@ -53,14 +53,15 @@ data class FoodItem(val name: String, val calories: Int, val timestamp: String)
 
 data class Achievement(
     val milestone: Int,
-    val isAchieved: Boolean
+    val isAchieved: Boolean,
+    var notified: Boolean = false // Add this field to track notification state
 )
+
 data class UserAchievement(
     val userId: String,
     val achievements: List<Achievement>
 )
 
-@RequiresApi(Build.VERSION_CODES.CUPCAKE)
 class StepCounterViewModel(application: Application) : AndroidViewModel(application), SensorEventListener {
     private val appContainer = (application as CalorieApplication).container
     private val uhdRepository = appContainer.uhdRepository
@@ -111,9 +112,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private val AGE_CONSTANT = 6.755
 
     private var _achievements = MutableStateFlow(UserAchievement("user123", listOf(
-        Achievement(5, false),
-        Achievement(10, false),
-        Achievement(25, false),
+        Achievement(5000, false),
+        Achievement(10000, false),
+        Achievement(25000, false),
         Achievement(50000, false),
         Achievement(100000, false)
     )))
@@ -170,7 +171,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         val newItem = FoodItem(name, calories, timestamp)
         _foodList.value += newItem
-        var food = FoodListDetails(name = name, calories = calories, timestamp = timestamp)
+        val food = FoodListDetails(name = name, calories = calories, timestamp = timestamp)
         uhdRepository.insertFood(food)
     }
     val totalCalories: StateFlow<Int> = _foodList.map { list ->
@@ -186,24 +187,31 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private fun updateAchievements(newSteps: Int) {
+        val sharedPrefs = getApplication<Application>().getSharedPreferences("AchievementsPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPrefs.edit()
+
         val currentAchievements = _achievements.value.achievements.map { achievement ->
-            if (!achievement.isAchieved && newSteps >= achievement.milestone) {
-                showNotification(achievement.milestone)  // Trigger notification
-                achievement.copy(isAchieved = true)
+            if (!achievement.isAchieved && newSteps >= achievement.milestone && !achievement.notified) {
+                showNotification(achievement.milestone)
+                achievement.copy(isAchieved = true, notified = true).also {
+                    editor.putBoolean("Notified_${achievement.milestone}", true)
+                }
             } else {
                 achievement
             }
         }
         _achievements.value = UserAchievement(_achievements.value.userId, currentAchievements)
+        editor.apply()
     }
+
 
     private fun showNotification(milestone: Int) {
         // Obtain the application context from the AndroidViewModel
         val context = getApplication<Application>().applicationContext
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val builder = NotificationCompat.Builder(context, "ACHIEVEMENT_CHANNEL_ID").apply {
-            setSmallIcon(R.drawable.norank) // Set the icon of the notification
+        val builder = NotificationCompat.Builder(getApplication(), "achievement_channel").apply {
+            setSmallIcon(R.drawable.applogo_black) // Set the icon of the notification
             setContentTitle("Achievement Unlocked")
             setContentText("Congratulations! You've reached $milestone steps!")
             priority = NotificationCompat.PRIORITY_DEFAULT
@@ -213,9 +221,6 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         // Notification ID is unique to each notification you create.
         notificationManager.notify(milestone, builder.build())
     }
-
-
-
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {
             if (it.sensor.type == Sensor.TYPE_STEP_COUNTER) {

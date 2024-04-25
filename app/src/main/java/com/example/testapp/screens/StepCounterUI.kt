@@ -62,7 +62,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
                 Text("Reset Steps", fontSize = 20.sp)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = { navController.navigate("foodList") },
@@ -76,7 +76,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
                 Text("Today's Food List", fontSize = 20.sp)
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Button(
                 onClick = { viewModel.resetMeals() },
