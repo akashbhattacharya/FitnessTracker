@@ -391,14 +391,10 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         _steps.value = 0
         _calories.value = 0.0
         viewModelScope.launch {
-            uhdRepository.getStepStream().collect() { stepDetails ->
-                if(stepDetails!=null) {
-                    var details = StepDetails(1, 0, stepDetails.totalSteps)
-                    uhdRepository.insertSteps(details)
-                }
-            }
+           var stepDetails = uhdRepository.getStepStream().first()
+            var details = StepDetails(1, 0, stepDetails.totalSteps)
+            uhdRepository.insertSteps(details)
         }
-
     }
 
     fun resetMeals(){

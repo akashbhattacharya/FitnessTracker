@@ -43,7 +43,7 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
             modifier = Modifier.size(275.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        StatsRow(steps = steps, burnedCalories = burnedCalories, goalCalories = goal, distance = distance)
+        StatsRow(steps = steps, burnedCalories = calories - burnedCalories, goalCalories = goal, distance = distance)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -133,7 +133,7 @@ fun CircularProgressBar(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "of Goal",
+                text = "of Calorie Goal",
                 color = textColor,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
