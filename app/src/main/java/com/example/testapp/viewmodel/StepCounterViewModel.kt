@@ -97,7 +97,8 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         "One step at a time, you'll get there!",
         "You're making progress, don't give up!",
         "Believe in yourself, you can do it!",
-        "Every step counts towards your goal!"
+        "Every step counts towards your goal!",
+        "Remember, walking helps you burn more calories!"
     )
 
     private val _isDarkModeEnabled = MutableStateFlow(false)
@@ -160,6 +161,8 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
                     if(stepDetails!=null){
                         _steps.value = stepDetails.tempSteps
                         _total_steps.value = stepDetails.totalSteps
+                        _calories.value = calculateCalories(stepDetails.tempSteps)
+
                     }
                     else{
                         uhdRepository.insertSteps(StepDetails(1,0,0))
