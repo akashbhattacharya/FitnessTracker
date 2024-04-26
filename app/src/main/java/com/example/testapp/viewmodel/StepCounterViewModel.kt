@@ -312,7 +312,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     private fun checkCalorieMilestone() {
         val goal = _moveGoal.value
         val halfGoal = goal / 2
-        if (_calories.value >= halfGoal && _calories.value < goal) {
+        if (totalCalories.value >= halfGoal && totalCalories.value < goal) {
             sendCalorieMilestoneNotification()
         }
     }
