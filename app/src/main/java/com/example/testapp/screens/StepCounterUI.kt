@@ -210,7 +210,7 @@ fun CaloriesDisplay(calories: Double, goalCalories: Int) {
     Box(contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
             progress = progress,
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(100.dp),
             color = Color(0xfff9aa33),
             strokeWidth = 6.dp
         )
