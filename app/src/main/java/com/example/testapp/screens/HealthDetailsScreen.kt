@@ -22,13 +22,13 @@ import kotlinx.coroutines.launch
 fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterViewModel) {
 
     var selectedAge by remember { mutableStateOf<String?>(null) }
-    var isAgeDropdownExpanded by remember { mutableStateOf(false) } // Age dropdown expanded state
+    var isAgeDropdownExpanded by remember { mutableStateOf(false) }
     var selectedHeight by remember { mutableStateOf<String?>(null) }
-    var isHeightDropdownExpanded by remember { mutableStateOf(false) } // Height dropdown expanded state
+    var isHeightDropdownExpanded by remember { mutableStateOf(false) }
     var selectedWeight by remember { mutableStateOf<String?>(null) }
-    var isWeightDropdownExpanded by remember { mutableStateOf(false) } // Weight dropdown expanded state
+    var isWeightDropdownExpanded by remember { mutableStateOf(false) }
     var selectedSex by remember { mutableStateOf<String?>(null) }
-    var isSexDropdownExpanded by remember { mutableStateOf(false) } // Sex dropdown expanded state
+    var isSexDropdownExpanded by remember { mutableStateOf(false) }
     var weightUnit by remember { mutableStateOf("kg") }
     var heightUnit by remember { mutableStateOf("cm") }
     val coroutineScope = rememberCoroutineScope()
@@ -85,7 +85,6 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Height selection with unit conversion
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -115,7 +114,6 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Weight selection with unit conversion
             Row {
                 Box(
                     modifier = Modifier
@@ -171,7 +169,6 @@ fun HealthDetailsScreen(navController: NavController, viewModel: StepCounterView
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sex selection
             Box(
 
                 modifier = Modifier

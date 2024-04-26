@@ -82,7 +82,6 @@ fun CalorieDisplay(totalCalories: Int) {
 
 @Composable
 fun BottomBarContent(viewModel: StepCounterViewModel) {
-    // Apply imePadding here to lift the entire bottom bar
     Column(modifier = Modifier
         .fillMaxWidth()
         .padding(16.dp)
@@ -137,12 +136,12 @@ fun FoodEntryForm(viewModel: StepCounterViewModel) {
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(70.dp)  // Adjusted height for aesthetic balance
-                .padding(vertical = 8.dp),  // Provides vertical padding
+                .height(70.dp)
+                .padding(vertical = 8.dp),
             shape = RoundedCornerShape(24),
             colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xff344955))
         ) {
-            Text("Add Food", fontSize = 18.sp, color = Color.White)  // Adjusted font size for better readability
+            Text("Add Food", fontSize = 18.sp, color = Color.White)
         }
     }
 }
@@ -161,16 +160,16 @@ fun TextField_Custom(
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),  // Added padding for spacing between TextFields
+            .padding(vertical = 8.dp),
         colors = TextFieldDefaults.textFieldColors(
             textColor = Color.Black,
             backgroundColor = Color(0xffeab676),
             focusedLabelColor = Color.Black,
             unfocusedLabelColor = Color.DarkGray,
-            focusedIndicatorColor = Color.Transparent,  // Hides the underline when focused
-            unfocusedIndicatorColor = Color.Transparent  // Hides the underline when unfocused
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent
         ),
-        shape = RoundedCornerShape(12.dp),  // Increased rounding for softer edges
+        shape = RoundedCornerShape(12.dp),
         singleLine = true
     )
 }

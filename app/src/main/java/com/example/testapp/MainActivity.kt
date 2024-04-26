@@ -55,7 +55,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private val activityRecognitionRequestCode = 1001 // Unique request code
+    private val activityRecognitionRequestCode = 1001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
             if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                 setupUI()
             } else {
-                finish()  // Close the app if permission is denied
+                finish()
             }
         }
     }
@@ -116,7 +116,6 @@ class MainActivity : ComponentActivity() {
                     "Meal Reminder Notifications",
                     NotificationManager.IMPORTANCE_HIGH
                 ).apply { description = "Notifications for meal reminders" },
-                // Adding the new achievement notification channel
                 NotificationChannel(
                     "achievement_channel",
                     "Achievement Notifications",
@@ -138,8 +137,7 @@ class MainActivity : ComponentActivity() {
         val viewModel: StepCounterViewModel by viewModels()
 
 
-        val coroutineScope = rememberCoroutineScope() // Remember a CoroutineScope for coroutine launch
-
+        val coroutineScope = rememberCoroutineScope()
         Scaffold(
             scaffoldState = scaffoldState,
             drawerContent = {
@@ -151,7 +149,7 @@ class MainActivity : ComponentActivity() {
                     navigationIcon = {
                         IconButton(onClick = {
                             coroutineScope.launch {
-                                scaffoldState.drawerState.open() // Call open() inside a coroutine
+                                scaffoldState.drawerState.open()
                             }
                         }) {
                             Icon(Icons.Filled.Menu, contentDescription = "Menu",tint = Color.White )
@@ -185,7 +183,6 @@ class MainActivity : ComponentActivity() {
             mutableStateOf("")
         }
 
-        // Observe the current back stack entry
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         currentRoute.value = navBackStackEntry?.destination?.route ?: ""
 
@@ -203,7 +200,6 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // List of items for the drawer
             val drawerItems = listOf(
                 DrawerItemData("Home", Icons.Filled.Home, "main"),
                 DrawerItemData("Health Details", Icons.Filled.MonitorHeart, "healthDetails"),

@@ -34,12 +34,12 @@ fun SetMealTimingsScreen(navController: NavController, mealTimeViewModel: StepCo
                 title = {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize(), // Fill the space of the AppBar
-                        contentAlignment = Alignment.Center // Align content to the center
+                            .fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Set Meal Timings",
-                            color = Color.White // Apply typography style
+                            color = Color.White
                         )
                     }
 
@@ -107,6 +107,6 @@ fun showTimePicker(time: LocalTime?, onTimeSet: (LocalTime) -> Unit, context: Co
         { _, hour, minute -> onTimeSet(LocalTime.of(hour, minute)) },
         timePicker.hour,
         timePicker.minute,
-        false  // Change this to 'true' for 24-hour format
+        false
     ).show()
 }

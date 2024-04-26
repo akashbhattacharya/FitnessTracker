@@ -32,9 +32,9 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
     Column(
         modifier = Modifier
             .padding(paddingValues)
-            .fillMaxSize(), // Fill the entire available space
-        verticalArrangement = Arrangement.Center, // Center vertically in the space
-        horizontalAlignment = Alignment.CenterHorizontally // Center horizontally
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CircularProgressBar(
             calories = calories,
@@ -42,6 +42,10 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
             darkMode = isDarkModeEnabled,
             modifier = Modifier.size(275.dp)
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        if (progress >= 1.0f) {
+            Text("Congratulations! Goal Achieved!", color = Color.Black)
+        }
         Spacer(modifier = Modifier.height(16.dp))
         StatsRow(steps = steps, burnedCalories = calories - burnedCalories, goalCalories = goal, distance = distance)
         Column(
@@ -89,12 +93,6 @@ fun StepCounterUI(navController: NavController, paddingValues: PaddingValues, vi
             ) {
                 Text("Reset Food List", fontSize = 20.sp)
             }
-        }
-
-
-        // Show congratulations message if goal reached
-        if (progress >= 1.0f) {
-            Text("Congratulations! Goal Achieved!", color = Color.Green)
         }
     }
 }
@@ -164,9 +162,9 @@ fun StatsRow(steps: Int, burnedCalories: Double, goalCalories: Int, distance: Do
             modifier = Modifier
                 .height(120.dp)
                 .weight(1f)
-                .padding(horizontal = 4.dp) // Add end padding to separate boxes
-                .background(Color(0xff4a6572), shape = RoundedCornerShape(10.dp)) // Rounded corners
-                .padding(8.dp), // Padding inside the box
+                .padding(horizontal = 4.dp)
+                .background(Color(0xff4a6572), shape = RoundedCornerShape(10.dp))
+                .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
             CaloriesDisplay(burnedCalories, goalCalories)
@@ -176,9 +174,9 @@ fun StatsRow(steps: Int, burnedCalories: Double, goalCalories: Int, distance: Do
             modifier = Modifier
                 .height(120.dp)
                 .weight(1f)
-                .padding(start = 4.dp) // Add end padding to separate boxes
-                .background(Color(0xff4a6572), shape = RoundedCornerShape(10.dp)) // Rounded corners
-                .padding(8.dp), // Padding inside the box
+                .padding(start = 4.dp)
+                .background(Color(0xff4a6572), shape = RoundedCornerShape(10.dp))
+                .padding(8.dp),
             contentAlignment = Alignment.Center
         ) {
             DistanceDisplay(distance)
@@ -199,7 +197,7 @@ fun StepsDisplay(steps: Int) {
         fontWeight = FontWeight(600),
         fontSize = 22.sp,
         textAlign = TextAlign.Center,
-        color = Color.White,  // Default color for the rest of the text
+        color = Color.White,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -227,9 +225,9 @@ fun CaloriesDisplay(calories: Double, goalCalories: Int) {
             text = annotatedText,
 
             fontWeight = FontWeight(600),
-            fontSize = 12.sp, // This will be overridden by the larger font size in the annotated part
-            textAlign = TextAlign.Center, // Centers the text horizontally inside the Box
-            modifier = Modifier.align(Alignment.Center) // Ensures the text is centered inside the Box
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.align(Alignment.Center)
         )
     }
 }

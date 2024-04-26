@@ -176,6 +176,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         _foodList.value += newItem
         val food = FoodListDetails(name = name, calories = calories, timestamp = timestamp)
         uhdRepository.insertFood(food)
+        checkCalorieMilestone()
     }
     val totalCalories: StateFlow<Int> = _foodList.map { list ->
         list.sumOf { it.calories }
@@ -231,7 +232,6 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
                 viewModelScope.launch {
                     _steps.value = stepCount
                     _calories.value = calculateCalories(stepCount)
-                    sendStepMilestoneNotification(stepCount)
                 }
             } else if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
                 val x = event.values[0]
@@ -277,7 +277,7 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
             viewModelScope.launch {
                 _steps.value += 1
                 _calories.value = calculateCalories(_steps.value)
-                sendStepMilestoneNotification(_steps.value)
+                checkStepMilestone()
             }
             var details : StepDetails
             viewModelScope.launch {
@@ -290,20 +290,9 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
         lastAccelerationMagnitude = accelerationMagnitude.toDouble()
     }
 
-    // Function to update steps and calories
-    fun updateStepsAndCalories(newSteps: Int, newCalories: Double) {
-        viewModelScope.launch {
-            _steps.value = newSteps
-            _calories.value = newCalories
-            checkStepMilestone()
-            checkCalorieMilestone()
-        }
-    }
-
     // Function to check if the user has reached a step milestone
     private fun checkStepMilestone() {
-        val goal = _moveGoal.value
-        if (_steps.value % goal == 0 && _steps.value != 0) {
+        if (_steps.value == 5) {
             sendStepMilestoneNotification(_steps.value)
         }
     }
@@ -318,10 +307,12 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private fun sendStepMilestoneNotification(value: Int) {
+        val message = _motivationalMessages.random() // Get a random motivational message
+
         val notificationBuilder = NotificationCompat.Builder(getApplication(), "stepCounterChannel")
             .setSmallIcon(android.R.drawable.stat_notify_chat)
             .setContentTitle("Almost There!")
-            .setContentText("You've reached 80% of your step goal. Keep going!")
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         val notificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -330,11 +321,10 @@ class StepCounterViewModel(application: Application) : AndroidViewModel(applicat
 
     // Function to send a notification for reaching a calorie milestone
     private fun sendCalorieMilestoneNotification() {
-        val message = _motivationalMessages.random() // Get a random motivational message
         val notificationBuilder = NotificationCompat.Builder(getApplication(), CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_notify_chat)
             .setContentTitle("Keep Going!")
-            .setContentText(message)
+            .setContentText("You have reached 50% of your calorie goal!")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         val notificationManager = getApplication<Application>().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
